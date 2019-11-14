@@ -1,11 +1,20 @@
 import sys
+from functools import partial
+
+_print = partial(print, file=sys.stderr)
 
 from lxml import etree
 
 xsl_root = etree.parse('original_to_add_field.xsl')
 transform = etree.XSLT(xsl_root)
-print(transform, file=sys.stderr)
+_print(transform)
 doc = etree.parse('original.xml')
-print(doc, file=sys.stderr)
+_print(doc)
 result_tree = transform(doc)
-print(str(result_tree), file=sys.stderr)
+# output
+_print(result_tree)
+rs = str(result_tree)
+
+output = etree.XML(str(result_tree))
+pp = etree.tostring(output, pretty_print=True, xml_declaration=True, encoding='utf8')
+sys.stderr.write(pp.decode('utf-8'))

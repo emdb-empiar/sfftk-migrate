@@ -3,7 +3,12 @@
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <xsl:template match="/">
-        <xsl:value-of select="segmentation"></xsl:value-of>
+        <segmentation>
+            <xsl:copy-of select="segmentation/name"/>
+            <xsl:copy-of select="segmentation/version"/>
+            <xsl:copy-of select="segmentation/segment"/>
+            <details></details>
+        </segmentation>
     </xsl:template>
 
 </xsl:stylesheet>
