@@ -4,7 +4,7 @@ import unittest
 
 from lxml import etree
 
-from .begin import migrate, _check, _print
+from .begin import migrate, _check, _print, parse_args
 
 TEST_DATA_PATH = os.path.dirname(__file__)
 
@@ -62,6 +62,13 @@ class TestUtils(unittest.TestCase):
             migrate(1, 2)
         with self.assertRaises(IOError):
             migrate('file.xml', 'file.xsl')
+
+    def test_parse_args(self):
+        """Test correct arguments"""
+        args = parse_args("file.xml -t 1.0", use_shlex=True)
+        self.assertEqual(args.input, "file.xml")
+        self.assertEqual(args.target, "1.0")
+        self.assertEqual(args.output, "file_1.0.xml")
 
 
 class TestMigrations(unittest.TestCase):
@@ -158,10 +165,10 @@ class TestMigrations(unittest.TestCase):
         _migrated = migrate(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
-        self.assertTrue(same)
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
         sys.stderr.write('\n')
         sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
+        self.assertTrue(same)
 
     def test_original_list_to_change_value_list(self):
         """Test changing all the values for a list"""
@@ -175,3 +182,5 @@ class TestMigrations(unittest.TestCase):
         sys.stderr.write('\n')
         sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
         self.assertTrue(same)
+
+

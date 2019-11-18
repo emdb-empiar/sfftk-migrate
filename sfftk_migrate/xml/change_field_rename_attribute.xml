@@ -5,31 +5,4 @@
 	<segment segment_id="1">
         <name>Segment1</name>
 	</segment>
-	<segment segment_id="2">
-        <name>Segment2</name>
-	</segment>
-	<segment segment_id="3">
-        <name>Segment3</name>
-	</segment>
-	<segment segment_id="4">
-        <name>Segment4</name>
-	</segment>
-	<segment segment_id="5">
-        <name>Segment5</name>
-	</segment>
-	<segment segment_id="6">
-        <name>Segment6</name>
-	</segment>
-	<segment segment_id="7">
-        <name>Segment7</name>
-	</segment>
-	<segment segment_id="8">
-        <name>Segment8</name>
-	</segment>
-	<segment segment_id="9">
-        <name>Segment9</name>
-	</segment>
-	<segment segment_id="10">
-        <name>Segment10</name>
-	</segment>
 </segmentation>

@@ -82,14 +82,49 @@ def migrate(original, stylesheet, **kwargs):
     # _print('difference:', dropped_fields)
     if dropped_fields and len(original_elements) > len(migrated_elements):
         warnings.warn(
-            UserWarning('the migration has resulted in the following fields being dropped: {}'.format(', '.join(dropped_fields))),
+            UserWarning('the migration has resulted in the following fields being dropped: {}'.format(
+                ', '.join(dropped_fields))),
         )
     return etree.tostring(migrated, pretty_print=True, xml_declaration=True)
 
 
+def do_migrate(args):
+    migrated = migrate(args.original, args.target)  # bytes
+    with open(args.output, 'w') as m:
+        m.write(migrated.encode('utf-8'))
+        m.flush()
+    return os.EX_OK
+
+
+def parse_args(args, use_shlex=True):
+    if use_shlex:
+        import shlex
+        _args = shlex.split(args)
+    import argparse
+    parser = argparse.ArgumentParser(prog='sff-migrate', description='Upgrade EMDB-SFF files to more recent schema')
+    parser.add_argument('input', help='input XML file')
+    parser.add_argument('-t', '--target', required=True, help='the target version to migrate to')
+    parser.add_argument('-o', '--output', required=False, help='output file [default: <input>_<target>.xml]')
+
+    args = parser.parse_args(_args)
+
+    if args.output is None:
+        input_fn = args.input.split('.')
+        root, ext = '.'.join(input_fn[:-1]), input_fn[-1]
+        args.output = os.path.join(
+            os.path.dirname(args.input),
+            '{root}_{target}.{ext}'.format(
+                root=root,
+                target=args.target,
+                ext=ext
+            )
+        )
+    return args
+
+
 def main():
     # migrated = migrate('original.xml', 'original_to_add_field.xsl')
-    _migrated = migrate('original.xml', 'original_to_drop_field.xsl') # bytes
+    _migrated = migrate('original.xml', 'original_to_drop_field.xsl')  # bytes
     # convert the migrated result to a byte sequence
     migrated = etree.ElementTree(etree.XML(_migrated))
     pp = etree.tostring(migrated, pretty_print=True, xml_declaration=True, encoding='utf-8')
