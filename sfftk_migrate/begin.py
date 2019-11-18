@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 from functools import partial
 
 _print = partial(print, file=sys.stderr)
@@ -16,7 +17,6 @@ the result of a transformation is an _XSLTResultTree which behaves like an Eleme
 """
 
 from lxml import etree
-
 
 # todo: editing complex elements
 """
@@ -71,21 +71,28 @@ def migrate(original, stylesheet, **kwargs):
     _check(original, str, TypeError)
     _check(stylesheet, str, TypeError)
     original_doc = etree.parse(original)  # ElementTree
+    original_elements = set([original_doc.getpath(element) for element in original_doc.iter()])
+    # _print('original_doc:', original_elements)
     stylesheet_doc = etree.parse(stylesheet)  # ElementTree
     transform = etree.XSLT(stylesheet_doc)  # transformer
     migrated = transform(original_doc, **kwargs)  # XSLTResultTree (like ElementTree)
-    # _print("*" * 50)
-    # _print(str(migrated))
-    # _print("*" * 50)
+    migrated_elements = set([migrated.getpath(element) for element in migrated.iter()])
+    # _print('migrated_doc:', migrated_elements)
+    dropped_fields = original_elements.difference(migrated_elements)
+    # _print('difference:', dropped_fields)
+    if dropped_fields and len(original_elements) > len(migrated_elements):
+        warnings.warn(
+            UserWarning('the migration has resulted in the following fields being dropped: {}'.format(', '.join(dropped_fields))),
+        )
     return etree.tostring(migrated, pretty_print=True, xml_declaration=True)
 
 
 def main():
-    migrated = migrate('original.xml', 'original_to_add_field.xsl')
-    _print(type(migrated))
+    # migrated = migrate('original.xml', 'original_to_add_field.xsl')
+    _migrated = migrate('original.xml', 'original_to_drop_field.xsl') # bytes
     # convert the migrated result to a byte sequence
+    migrated = etree.ElementTree(etree.XML(_migrated))
     pp = etree.tostring(migrated, pretty_print=True, xml_declaration=True, encoding='utf-8')
-    migrated_doc = etree.XML(pp)
     sys.stderr.write(pp.decode('utf-8'))
 
     return os.EX_OK

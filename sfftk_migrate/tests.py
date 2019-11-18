@@ -4,7 +4,7 @@ import unittest
 
 from lxml import etree
 
-from .begin import migrate, _check
+from .begin import migrate, _check, _print
 
 TEST_DATA_PATH = os.path.dirname(__file__)
 
@@ -74,9 +74,9 @@ class TestMigrations(unittest.TestCase):
         _migrated = migrate(original, stylesheet, details=etree.XSLT.strparam(details_text))  # bytes
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
-        # sys.stderr.write('ref:\n' + etree.tostring(reference).decode('utf-8'))
+        # sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
         # sys.stderr.write('\n')
-        # sys.stderr.write('mig:\n' + etree.tostring(migrated).decode('utf-8'))
+        # sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
         self.assertTrue(same)
 
     def test_original_to_drop_field(self):
@@ -84,11 +84,22 @@ class TestMigrations(unittest.TestCase):
         original = os.path.join(TEST_DATA_PATH, 'original.xml')
         reference = etree.parse(os.path.join(TEST_DATA_PATH, 'drop_field.xml'))
         stylesheet = os.path.join(TEST_DATA_PATH, 'original_to_drop_field.xsl')
-        _migrated = migrate(original, stylesheet)
+        with self.assertWarns(UserWarning):
+            _migrated = migrate(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
-        sys.stderr.write('ref:\n' + etree.tostring(reference).decode('utf-8'))
-        sys.stderr.write('\n')
-        sys.stderr.write('mig:\n' + etree.tostring(migrated).decode('utf-8'))
         self.assertTrue(same)
-        self.assertWarns(same)
+        # sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
+        # sys.stderr.write('\n')
+        # sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
+
+    def test_original_to_change_field_rename_field(self):
+        """Test changing a field by renaming it"""
+        original = os.path.join(TEST_DATA_PATH, 'original.xml')
+        reference = etree.parse(os.path.join(TEST_DATA_PATH, 'change_field_rename_field.xml'))
+        stylesheet = os.path.join(TEST_DATA_PATH, 'original_to_change_field_rename_field.xsl')
+        _migrated = migrate(original, stylesheet)
+        migrated = etree.ElementTree(etree.XML(_migrated))
+        sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
+        sys.stderr.write('\n')
+        sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
