@@ -149,3 +149,16 @@ class TestMigrations(unittest.TestCase):
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
         sys.stderr.write('\n')
         sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
+
+    def test_original_to_change_field_rename_attribute(self):
+        """Test changing a field by changing the value"""
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'change_field_rename_attribute.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_field_rename_attribute.xsl')
+        _migrated = migrate(original, stylesheet)
+        migrated = etree.ElementTree(etree.XML(_migrated))
+        same = compare_elements(reference.getroot(), migrated.getroot())
+        self.assertTrue(same)
+        sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
+        sys.stderr.write('\n')
+        sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
