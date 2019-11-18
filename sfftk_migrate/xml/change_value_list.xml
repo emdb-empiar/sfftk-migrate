@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<segmentation>
+	<name>Test</name>
+	<version>1</version>
+	<segment id="1">
+        <name>This is Segment1</name>
+	</segment>
+	<segment id="2">
+        <name>This is Segment2</name>
+	</segment>
+	<segment id="3">
+        <name>This is Segment3</name>
+	</segment>
+	<segment id="4">
+        <name>This is Segment4</name>
+	</segment>
+	<segment id="5">
+        <name>This is Segment5</name>
+	</segment>
+	<segment id="6">
+        <name>This is Segment6</name>
+	</segment>
+	<segment id="7">
+        <name>This is Segment7</name>
+	</segment>
+	<segment id="8">
+        <name>This is Segment8</name>
+	</segment>
+	<segment id="9">
+        <name>This is Segment9</name>
+	</segment>
+	<segment id="10">
+        <name>This is Segment10</name>
+	</segment>
+</segmentation>

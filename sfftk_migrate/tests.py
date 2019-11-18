@@ -20,7 +20,7 @@ replace_list = [
 
 def _replace(s, vals=replace_list):
     if s is None:
-        return s
+        return ''
     _s = s
     for u, v in vals:
         _s = _s.replace(u, v)
@@ -145,13 +145,13 @@ class TestMigrations(unittest.TestCase):
         _migrated = migrate(original, stylesheet, segment_name=etree.XSLT.strparam(_segment_name))
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
-        self.assertTrue(same)
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
         sys.stderr.write('\n')
         sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
+        self.assertTrue(same)
 
     def test_original_to_change_field_rename_attribute(self):
-        """Test changing a field by changing the value"""
+        """Test changing a field by renaming an attribute"""
         original = os.path.join(XML, 'original.xml')
         reference = etree.parse(os.path.join(XML, 'change_field_rename_attribute.xml'))
         stylesheet = os.path.join(XSL, 'original_to_change_field_rename_attribute.xsl')
@@ -162,3 +162,16 @@ class TestMigrations(unittest.TestCase):
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
         sys.stderr.write('\n')
         sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
+
+    def test_original_list_to_change_value_list(self):
+        """Test changing all the values for a list"""
+        original = os.path.join(XML, 'original_list.xml')
+        reference = etree.parse(os.path.join(XML, 'change_value_list.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_value_list.xsl')
+        _migrated = migrate(original, stylesheet)
+        migrated = etree.ElementTree(etree.XML(_migrated))
+        same = compare_elements(reference.getroot(), migrated.getroot())
+        sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
+        sys.stderr.write('\n')
+        sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
+        self.assertTrue(same)
