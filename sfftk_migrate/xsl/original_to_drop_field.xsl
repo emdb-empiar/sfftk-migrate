@@ -4,11 +4,8 @@
 
     <xsl:output method="xml" version="1.0" encoding="utf-8" indent="yes"/>
 
-    <xsl:template match="/">
-        <segmentation>
-            <xsl:copy-of select="segmentation/version"/>
-            <xsl:copy-of select="segmentation/segment"/>
-        </segmentation>
-    </xsl:template>
+    <xsl:template match="/segmentation/name"/>
+
+    <xsl:include href="identity.xsl"/>
 
 </xsl:stylesheet>
