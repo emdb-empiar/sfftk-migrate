@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<segmentation>
+    <version>v0.8.0.dev0</version>
+    <name>a new name</name>
+    <software_list>
+		<software id="0">
+			<name>the good software company</name>
+			<version>3.8.2.dev0</version>
+			<processing_details>【イスタンブール、ワシントン共同】シリア人権監視団（英国）によると、シリア北部の要衝マンビジュで16日、自爆テロがあり、市民ら少なくとも16人が死亡した。米軍主導の有志連合の部隊が狙われたとみられ、ロイター通信は米当局者の話として米軍兵士4人が死亡、3人が負傷したと伝えた。過激派組織「イスラム国」（IS）が系列ニュースサイトを通じ、犯行声明を出した。(共同通信)</processing_details>`r
+            </software>
+		</software_list>
+    <primary_descriptor>three_d_volume</primary_descriptor>
+    <bounding_box/>
+    <global_external_references/>
+    <segmentList>
+        <segment id="57" parentID="0">
+            <biologicalAnnotation>
+                <name>a very good segment</name>
+                <description>Together with a brief description on how to convert a segment from one form to another</description>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.959543645381927</red>
+                <green>0.915660321712494</green>
+                <blue>0.546127021312714</blue>
+            </colour>
+        </segment>
+        <segment id="175" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.723594725131989</red>
+                <green>0.912819683551788</green>
+                <blue>0.599217236042023</blue>
+            </colour>
+        </segment>
+        <segment id="186" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.606720149517059</red>
+                <green>0.550794899463654</green>
+                <blue>0.646078109741211</blue>
+            </colour>
+        </segment>
+        <segment id="196" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.505668878555298</red>
+                <green>0.670651853084564</green>
+                <blue>0.930752396583557</blue>
+            </colour>
+        </segment>
+        <segment id="199" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.581127524375916</red>
+                <green>0.671419739723206</green>
+                <blue>0.989355087280273</blue>
+            </colour>
+        </segment>
+        <segment id="201" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.737071096897125</red>
+                <green>0.891087234020233</green>
+                <blue>0.537879288196564</blue>
+            </colour>
+        </segment>
+        <segment id="206" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.804069936275482</red>
+                <green>0.904023587703705</green>
+                <blue>0.921488285064697</blue>
+            </colour>
+        </segment>
+        <segment id="211" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.575288772583008</red>
+                <green>0.501842260360718</green>
+                <blue>0.567933857440948</blue>
+            </colour>
+        </segment>
+        <segment id="215" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.89892315864563</red>
+                <green>0.54051274061203</green>
+                <blue>0.562300145626068</blue>
+            </colour>
+        </segment>
+        <segment id="218" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>1.</red>
+                <green>0.411764711141586</green>
+                <blue>0.705882370471954</blue>
+            </colour>
+        </segment>
+        <segment id="220" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.928920388221741</red>
+                <green>0.767324566841125</green>
+                <blue>0.963512361049652</blue>
+            </colour>
+        </segment>
+        <segment id="221" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.39215686917305</red>
+                <green>0.584313750267029</green>
+                <blue>0.929411768913269</blue>
+            </colour>
+        </segment>
+        <segment id="222" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.990017771720886</red>
+                <green>0.877681732177734</green>
+                <blue>0.882251977920532</blue>
+            </colour>
+        </segment>
+        <segment id="225" parentID="0">
+            <biologicalAnnotation>
+                <externalReferences/>
+            </biologicalAnnotation>
+            <colour>
+                <red>0.801110684871674</red>
+                <green>0.913551211357117</green>
+                <blue>0.764044404029846</blue>
+            </colour>
+        </segment>
+    </segmentList>
+    <details>სტამბოლი (თურქ. İstanbul — ისთანბულ) — თურქეთის უდიდესი და ხალხმრავალი ქალაქი. ქვეყნის ეკონომიკური, კულტურული და ისტორიული ცენტრი. ტრანსკონტინენტური ქალაქი ევრაზიაში, რომელიც მდებარეობს ბოსფორის სრუტის გასწვრივ (რომელიც ჰყოფს ევროპასა და აზიას), მარმარილოსა და შავი ზღვის სანაპიროზე. ქალაქის კომერციული და ისტორიული ცენტრი ევროპულ ნაწილშია, ხოლო ქალაქის მოსახლეობის დაახლოებით მესამედი აზიურ ნაწილში ცხოვრობს. ქალაქი სტამბოლი ამავე სახელწოდების მეტროპოლიის ადმინისტრაციული ცენტრია, სადაც 15 მილიონი ადამიანი ცხოვრობს. სტამბოლი მსოფლიოს ერთ-ერთი ყველაზე ხალხმრავალი ქალაქია და მსოფლიოს მე-5 უდიდესი ქალაქია ისევე, როგორც ევროპის ყველაზე დიდი ქალაქია. სტამბოლი განიხილება, როგორც ხიდი დასავლეთსა და აღმოსავლეთს შორის. სტამბოლის ისტორიული და სტრატეგიული ადგილმდებარეობა აბრეშუმის გზაზე, რომელიც ევროპასა და ახლო აღმოსავლეთის სარკინიგზო ქსელების, შავი ზღვისა და ხმელთაშუაზღვისპირეთის მარშრუტის გზაზე მდებარეობს, ქალაქის კოსმოპოლიტური მოსახლეობის წარმოქმნის საფუძველი გახდა, თუმცა, ეს ფაქტი ნაკლებად შესამჩნევი იყო 1923 წლისთვის, როდესაც ყალიბდებოდა თურქეთის რესპუბლიკა. ომებს შორის პერიოდში ახალ დედაქალაქად ანკარის გამოცხადებამ, ქალაქს უდიდესი მნიშვნელობა მიანიჭა. 1950-იანი წლებიდან, ქალაქის მოსახლეობა ათჯერ გაიზარდა, რაც ანატოლიიდან მიგრანტების ჩამოსვლით იყო განპირობებული, ხოლო ამან ქალაქის ადმინისტრაციული საზღვრების გაფართოება გამოიწვია. XX საუკუნის დასასრულს დაარსებული ხელოვნების, მუსიკის, კინოს ფესტივალები და კულტურული ღონისძიებები დღესაც იმართება ქალაქში და მის სავიზიტო ბარათად იქცა. ქალაქის ინფრასტრუქტურის გაუმჯობესებამ, გამოიწვია რთული სატრანსპორტო ქსელის წარმოშობა. ქალაქი ისტორიულად ცნობილია, როგორც კონსტანტინოპოლი (ბერძნ. Κωνσταντινούπολις, თურქ. Kostantiniyye — კონსტანტინიე) და ბიზანტიონი.</details>
+</segmentation>

@@ -5,6 +5,10 @@ from functools import partial
 
 _print = partial(print, file=sys.stderr)
 
+TEST_DATA_PATH = os.path.join(os.path.dirname(__file__))
+XSL = os.path.join(TEST_DATA_PATH, 'xsl')
+XML = os.path.join(TEST_DATA_PATH, 'xml')
+
 """
 Lessons learned in using `lxml`
 ---------------------------------
@@ -88,12 +92,35 @@ def migrate(original, stylesheet, **kwargs):
     return etree.tostring(migrated, pretty_print=True, xml_declaration=True)
 
 
+def get_source_version(fn):
+    """
+    Return the version of the document
+
+    The version will always be in /segmentation/version
+
+    :param str fn: filename as a string
+    :return: version
+    :rtype: str
+    """
+    source_tree = etree.parse(fn)
+    source_version = source_tree.xpath("/segmentation/version/text()")[0]
+    return source_version
+
+
 def do_migrate(args):
-    migrated = migrate(args.original, args.target)  # bytes
+    source = get_source_version(args.original)
+    stylesheet = get_stylesheet(source, args.target)
+    migrated = migrate(args.original, stylesheet)  # bytes
     with open(args.output, 'w') as m:
         m.write(migrated.encode('utf-8'))
         m.flush()
     return os.EX_OK
+
+
+def get_stylesheet(source, target, prefix="migrate"):
+    stylesheet = os.path.join(XSL, "{prefix}_v{source}_to_v{target}.xsl".format(prefix=prefix, source=source, target=target))
+    assert os.path.exists(os.path.join(XSL, stylesheet))
+    return stylesheet
 
 
 def parse_args(args, use_shlex=True):
@@ -124,7 +151,7 @@ def parse_args(args, use_shlex=True):
 
 def main():
     # migrated = migrate('original.xml', 'original_to_add_field.xsl')
-    _migrated = migrate('original.xml', 'original_to_drop_field.xsl')  # bytes
+    _migrated = migrate(os.path.join(XML, 'original.xml'), os.path.join(XSL, 'original_to_drop_field.xsl'))  # bytes
     # convert the migrated result to a byte sequence
     migrated = etree.ElementTree(etree.XML(_migrated))
     pp = etree.tostring(migrated, pretty_print=True, xml_declaration=True, encoding='utf-8')
