@@ -88,7 +88,12 @@
     <!-- bounding box -->
     <xsl:template match="/segmentation/boundingBox">
         <bounding_box>
-            <xsl:value-of select="."/>
+            <xsl:copy-of select="@xmin"/>
+            <xsl:copy-of select="@xmax"/>
+            <xsl:copy-of select="@ymin"/>
+            <xsl:copy-of select="@ymax"/>
+            <xsl:copy-of select="@zmin"/>
+            <xsl:copy-of select="@zmax"/>
         </bounding_box>
     </xsl:template>
 
