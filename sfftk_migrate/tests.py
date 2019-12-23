@@ -83,7 +83,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(source_version, '1')
 
 
-
 class TestMigrations(unittest.TestCase):
     def test_original_to_add_field(self):
         """Test adding a field to the original"""
@@ -200,11 +199,49 @@ class TestMigrations(unittest.TestCase):
 class TestEMDBSFFMigrations(unittest.TestCase):
     def test_v0_7_0_dev0_to_v0_8_0_dev0(self):
         """Test migration from v0.7.0.dev0 to v0.8.0.dev0"""
-        original = os.path.join(begin.XML, 'emd_1547.sff')
+        original = os.path.join(begin.XML, 'test7.sff')
         stylesheet = os.path.join(begin.XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
+        # phase I migration using stylesheet
         _migrated = begin.migrate(original, stylesheet)
+        # convert migration to an ElementTree object
         migrated = etree.ElementTree(etree.XML(_migrated))
-        migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode('utf-8')
-        sys.stderr.write('migrated:\n' + migrated_decoded)
-        with open(os.path.join(begin.XML, 'emd_1547_v0.8.0.dev0.sff'), 'w') as f:
+
+        _original = etree.parse(original)
+
+        segments = _original.xpath('/segmentation/segmentList/segment')
+        begin._print(segments)
+        segment_meshes = dict()
+        for segment in segments:
+            segment_meshes[int(segment.get("id"))] = dict()
+            for mesh in segment.xpath('meshList/mesh'):
+                _vertices, _normals, _triangles = begin.migrate_mesh(mesh)
+                segment_meshes[int(segment.get("id"))][int(mesh.get("id"))] = _vertices, _normals, _triangles
+
+        migrated_segments = migrated.xpath('/segmentation/segment_list/segment')
+        for migrated_segment in migrated_segments:
+            for migrated_mesh in migrated_segment.xpath('mesh_list/mesh'):
+                _vertices, _normals, _triangles = segment_meshes[int(migrated_segment.get("id"))][
+                    int(migrated_mesh.get("id"))]
+                migrated_mesh.insert(0, _vertices)
+                migrated_mesh.insert(1, _normals)
+                migrated_mesh.insert(2, _triangles)
+
+        # let's see what it looks like
+        migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
+            'utf-8')
+        # sys.stderr.write('migrated:\n' + migrated_decoded)
+        with open(os.path.join(begin.XML, 'test7_v0.8.0.dev0.sff'), 'w') as f:
             f.write(migrated_decoded)
+
+    def test_meshes_equal_v0_7_0_dev0_vs_v0_8_0_dev0(self):
+        """Test that the mesh data is the same"""
+        v7 = os.path.join(begin.XML, 'test7.sff')
+        v8 = os.path.join(begin.XML, 'test7_v0.8.0.dev0.sff')
+        fv7 = etree.parse(v7)
+        fv8 = etree.parse(v8)
+        fv7_segments = fv7.xpath('/segmentation/segmentList/segment')
+        # extract vertices, normals and triangles
+        fv8_segments = fv7.xpath('/segmentation/segment_list/segment')
+        # extract vertices, normals and triangles
+        # compare
+        self.assertTrue(False)

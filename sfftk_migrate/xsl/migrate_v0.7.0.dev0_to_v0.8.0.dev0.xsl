@@ -157,6 +157,16 @@
         </global_external_references>
     </xsl:template>
 
+    <!-- mesh components -->
+    <xsl:template match="/segmentation/segmentList/segment">
+        <xsl:for-each select=".">
+            <xsl:variable name="segment" select="position()"/>
+            <xsl:message terminate="yes">
+                Something to report
+            </xsl:message>
+        </xsl:for-each>
+    </xsl:template>
+
     <!-- segments -->
     <xsl:template match="/segmentation/segmentList">
         <segment_list>
@@ -213,25 +223,61 @@
                     <xsl:copy-of select="./colour"/>
                     <xsl:copy-of select="$newline"/>
                     <xsl:copy-of select="$tab-3"/>
-                    <three_d_volume>
-                        <xsl:copy-of select="$newline"/>
-                        <xsl:copy-of select="$tab-4"/>
-                        <lattice_id><xsl:value-of select="./threeDVolume/latticeId"/></lattice_id>
-                        <xsl:copy-of select="$newline"/>
-                        <xsl:copy-of select="$tab-4"/>
-                        <xsl:copy-of select="./threeDVolume/value"/>
-                        <xsl:copy-of select="$newline"/>
-                        <xsl:choose>
-                            <xsl:when test="./threeDVolume/transformId">
-                                <xsl:copy-of select="$tab-4"/>
-                                <transform_id>
-                                    <xsl:value-of select="./threeDVolume/transformId"/>
-                                </transform_id>
+                    <xsl:choose>
+                        <xsl:when test="./threeDVolume">
+                            <three_d_volume>
                                 <xsl:copy-of select="$newline"/>
-                            </xsl:when>
-                        </xsl:choose>
-                        <xsl:copy-of select="$tab-3"/>
-                    </three_d_volume>
+                                <xsl:copy-of select="$tab-4"/>
+                                <lattice_id>
+                                    <xsl:value-of select="./threeDVolume/latticeId"/>
+                                </lattice_id>
+                                <xsl:copy-of select="$newline"/>
+                                <xsl:copy-of select="$tab-4"/>
+                                <xsl:copy-of select="./threeDVolume/value"/>
+                                <xsl:copy-of select="$newline"/>
+                                <xsl:choose>
+                                    <xsl:when test="./threeDVolume/transformId">
+                                        <xsl:copy-of select="$tab-4"/>
+                                        <transform_id>
+                                            <xsl:value-of select="./threeDVolume/transformId"/>
+                                        </transform_id>
+                                        <xsl:copy-of select="$newline"/>
+                                    </xsl:when>
+                                </xsl:choose>
+                                <xsl:copy-of select="$tab-3"/>
+                            </three_d_volume>
+                        </xsl:when>
+                        <xsl:when test="./meshList">
+                            <mesh_list>
+                                <xsl:for-each select="./meshList/mesh">
+                                    <xsl:copy-of select="$newline"/>
+                                    <xsl:copy-of select="$tab-4"/>
+                                    <mesh>
+                                        <xsl:copy-of select="@id"/>
+<!--                                        <xsl:copy-of select="$newline"/>-->
+<!--                                        <xsl:copy-of select="$tab-5"/>-->
+                                        <xsl:choose>
+                                            <xsl:when test="./transformId">
+                                                <xsl:copy-of select="$newline"/>
+                                                <xsl:copy-of select="$tab-5"/>
+                                                <transform_id>
+                                                    <xsl:value-of select="./transformId"/>
+                                                </transform_id>
+                                                <xsl:copy-of select="$newline"/>
+                                                <xsl:copy-of select="$tab-4"/>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:copy-of select="$newline"/>
+                                                <xsl:copy-of select="$tab-5"/>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </mesh>
+                                </xsl:for-each>
+                                <xsl:copy-of select="$newline"/>
+                                <xsl:copy-of select="$tab-3"/>
+                            </mesh_list>
+                        </xsl:when>
+                    </xsl:choose>
                     <xsl:copy-of select="$newline"/>
                     <xsl:copy-of select="$tab-2"/>
                 </segment>

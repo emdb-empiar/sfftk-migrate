@@ -21,6 +21,8 @@ the result of a transformation is an _XSLTResultTree which behaves like an Eleme
 """
 
 from lxml import etree
+import struct
+import base64
 
 # todo: editing complex elements
 """
@@ -63,7 +65,109 @@ def _check(obj, klass, exception=Exception, message="object '{}' is not of class
             raise exception(message)
 
 
-def migrate(original, stylesheet, **kwargs):
+def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endianness="little"):
+    """Given a mesh from the v0.7.0.dev0 we convert it to a mesh in v0.8.0.dev0"""
+
+    ENDIANNESS = {
+        "little": "<",
+        "big": ">",
+    }
+    MODE = {
+        "int8": "b",
+        "uint8": "B",
+        "int16": "h",
+        "uint16": "H",
+        "int32": "i",
+        "uint32": "I",
+        "int64": "q",
+        "uint64": "Q",
+        "float32": "f",
+        "float64": "d"
+    }
+
+    # assertions
+    try:
+        assert endianness in ["little", "big"]
+    except AssertionError:
+        raise ValueError("invalid endianness: {}".format(endianness))
+    try:
+        assert triangles_mode in ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64"]
+    except AssertionError:
+        raise ValueError("invalid triangles mode: {}".format(triangles_mode))
+    try:
+        assert vertices_mode in ["float32", "float64"]
+    except AssertionError:
+        raise ValueError("invalid vertices mode: {}".format(vertices_mode))
+
+    surface_vertex_dict = dict()  # dictionary to remap vertex ids
+    surface_vertices = list()
+    normal_vertices = list()
+    vertex_list = next(mesh.iter("vertexList"))
+    i = 0
+    for vertex in vertex_list.iter("v"):
+        designation = vertex.get("designation")
+        x, y, z = vertex.xpath("*")
+        # 'surface' vertex by default
+        if designation is None or designation == "surface":
+            surface_vertex_dict[int(vertex.get("vID"))] = len(surface_vertices) // 3  # len = index
+            surface_vertices += [float(x.text), float(y.text), float(z.text)]
+        else:
+            normal_vertices += [float(x.text), float(y.text), float(z.text)]
+    # _print(surface_vertex_dict)
+    # sanity check: normal_vertices should have the same length as surface_vertices list if it exists
+    if normal_vertices:
+        try:
+            assert len(surface_vertices) == len(normal_vertices)
+        except AssertionError:
+            raise ValueError("surface and normal vertice lists are of different length")
+    bin_surface_vertices = struct.pack(
+        "{}{}{}".format(ENDIANNESS[endianness], len(surface_vertices), MODE[vertices_mode]), *surface_vertices)
+    base64_surface_vertices = base64.b64encode(bin_surface_vertices)
+    bin_normal_vertices = struct.pack(
+        "{}{}{}".format(ENDIANNESS[endianness], len(normal_vertices), MODE[vertices_mode]), *normal_vertices)
+    base64_normal_vertices = base64.b64encode(bin_normal_vertices)
+    surface_vertices_element = etree.Element("vertices", num_vertices=str(len(surface_vertices) // 3), mode=vertices_mode,
+                                             endianness=endianness, data=base64_surface_vertices)
+    surface_vertices_element.tail = "\n\t\t\t\t\t"
+    normal_vertices_element = etree.Element("normals", num_normals=str(len(normal_vertices) // 3), mode=vertices_mode,
+                                            endianness=endianness, data=base64_normal_vertices)
+    normal_vertices_element.tail = "\n\t\t\t\t\t"
+
+    # work on triangles
+    triangles = list()
+    triangle_list = next(mesh.iter("polygonList"))
+    for triangle in triangle_list.iter("P"):
+        vertex_indices = triangle.xpath("*")
+        if len(vertex_indices) == 3:  # no normals
+            _v1, _v2, _v3 = vertex_indices
+            v1 = int(_v1.text)
+            v2 = int(_v2.text)
+            v3 = int(_v3.text)
+        elif len(vertex_indices) == 6:  # s, n, s, n, s, n
+            _v1, _n1, _v2, _n2, _v3, _n3 = vertex_indices
+            # get the new index
+            v1 = surface_vertex_dict[int(_v1.text)]
+            v2 = surface_vertex_dict[int(_v2.text)]
+            v3 = surface_vertex_dict[int(_v3.text)]
+        else:
+            raise ValueError("invalid polygon: should have 3 or 6 vertices only")
+
+        triangles += [v1, v2, v3]
+    # sanity check: there should be no triangle with a vertex id larger than the length of vertices/normals
+    try:
+        assert max(triangles) < len(surface_vertices)
+    except AssertionError:
+        raise ValueError("triangle with non-existent vertex found!")
+    bin_triangles = struct.pack("{}{}{}".format(ENDIANNESS[endianness], len(triangles), MODE[triangles_mode]), *triangles)
+    base64_triangles = base64.b64encode(bin_triangles)
+    triangles_element = etree.Element("triangles", num_triangles=str(len(triangles) // 3), mode=triangles_mode,
+                                      endianness=endianness, data=base64_triangles)
+    triangles_element.tail = "\n\t\t\t\t"
+
+    return surface_vertices_element, normal_vertices_element, triangles_element
+
+
+def migrate(original, stylesheet, verbose=False, **kwargs):
     """
     Migrate `original` according to `stylesheet`
 
@@ -84,7 +188,7 @@ def migrate(original, stylesheet, **kwargs):
     # _print('migrated_doc:', migrated_elements)
     dropped_fields = original_elements.difference(migrated_elements)
     # _print('difference:', dropped_fields)
-    if dropped_fields and len(original_elements) > len(migrated_elements):
+    if dropped_fields and len(original_elements) > len(migrated_elements) and verbose:
         warnings.warn(
             UserWarning('the migration has resulted in the following fields being dropped: {}'.format(
                 ', '.join(dropped_fields))),
@@ -118,7 +222,8 @@ def do_migrate(args):
 
 
 def get_stylesheet(source, target, prefix="migrate"):
-    stylesheet = os.path.join(XSL, "{prefix}_v{source}_to_v{target}.xsl".format(prefix=prefix, source=source, target=target))
+    stylesheet = os.path.join(XSL,
+                              "{prefix}_v{source}_to_v{target}.xsl".format(prefix=prefix, source=source, target=target))
     assert os.path.exists(os.path.join(XSL, stylesheet))
     return stylesheet
 
