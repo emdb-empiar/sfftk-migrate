@@ -8,7 +8,22 @@ _print = partial(print, file=sys.stderr)
 TEST_DATA_PATH = os.path.join(os.path.dirname(__file__))
 XSL = os.path.join(TEST_DATA_PATH, 'xsl')
 XML = os.path.join(TEST_DATA_PATH, 'xml')
-
+ENDIANNESS = {
+    "little": "<",
+    "big": ">",
+}
+MODE = {
+    "int8": "b",
+    "uint8": "B",
+    "int16": "h",
+    "uint16": "H",
+    "int32": "i",
+    "uint32": "I",
+    "int64": "q",
+    "uint64": "Q",
+    "float32": "f",
+    "float64": "d"
+}
 """
 Lessons learned in using `lxml`
 ---------------------------------
@@ -67,24 +82,6 @@ def _check(obj, klass, exception=Exception, message="object '{}' is not of class
 
 def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endianness="little"):
     """Given a mesh from the v0.7.0.dev0 we convert it to a mesh in v0.8.0.dev0"""
-
-    ENDIANNESS = {
-        "little": "<",
-        "big": ">",
-    }
-    MODE = {
-        "int8": "b",
-        "uint8": "B",
-        "int16": "h",
-        "uint16": "H",
-        "int32": "i",
-        "uint32": "I",
-        "int64": "q",
-        "uint64": "Q",
-        "float32": "f",
-        "float64": "d"
-    }
-
     # assertions
     try:
         assert endianness in ["little", "big"]
@@ -126,7 +123,8 @@ def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endiann
     bin_normal_vertices = struct.pack(
         "{}{}{}".format(ENDIANNESS[endianness], len(normal_vertices), MODE[vertices_mode]), *normal_vertices)
     base64_normal_vertices = base64.b64encode(bin_normal_vertices)
-    surface_vertices_element = etree.Element("vertices", num_vertices=str(len(surface_vertices) // 3), mode=vertices_mode,
+    surface_vertices_element = etree.Element("vertices", num_vertices=str(len(surface_vertices) // 3),
+                                             mode=vertices_mode,
                                              endianness=endianness, data=base64_surface_vertices)
     surface_vertices_element.tail = "\n\t\t\t\t\t"
     normal_vertices_element = etree.Element("normals", num_normals=str(len(normal_vertices) // 3), mode=vertices_mode,
@@ -158,13 +156,20 @@ def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endiann
         assert max(triangles) < len(surface_vertices)
     except AssertionError:
         raise ValueError("triangle with non-existent vertex found!")
-    bin_triangles = struct.pack("{}{}{}".format(ENDIANNESS[endianness], len(triangles), MODE[triangles_mode]), *triangles)
+    bin_triangles = struct.pack("{}{}{}".format(ENDIANNESS[endianness], len(triangles), MODE[triangles_mode]),
+                                *triangles)
     base64_triangles = base64.b64encode(bin_triangles)
     triangles_element = etree.Element("triangles", num_triangles=str(len(triangles) // 3), mode=triangles_mode,
                                       endianness=endianness, data=base64_triangles)
     triangles_element.tail = "\n\t\t\t\t"
 
     return surface_vertices_element, normal_vertices_element, triangles_element
+
+
+def _decode_data(data64, length, mode, endianness="little"):
+    bin_data = base64.b64decode(data64)
+    data = struct.unpack("{}{}{}".format(ENDIANNESS[endianness], length * 3, MODE[mode]), bin_data)
+    return data
 
 
 def migrate(original, stylesheet, verbose=False, **kwargs):
