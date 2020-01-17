@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <segmentation>
-    <version>v0.8.0.dev0</version>
+    <version>0.8.0.dev0</version>
     <name>STL Segmentation</name>
     <software_list>
 		<software id="0">
@@ -21,10 +21,7 @@
 		<segment id="1" parent_id="0">
 			<biological_annotation>
 				<name>test2.stl#0</name>
-				
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>0.950607713649732</red>
                 <green>0.276477548934453</green>
@@ -42,10 +39,7 @@
 		<segment id="2" parent_id="0">
 			<biological_annotation>
 				<name>test2.stl#0</name>
-				
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>0.344446440845332</red>
                 <green>0.874358634746004</green>
@@ -63,10 +57,7 @@
 		<segment id="3" parent_id="0">
 			<biological_annotation>
 				<name>test2.stl#0</name>
-				
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>0.731149686166757</red>
                 <green>0.312206088893465</green>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <segmentation>
-    <version>v0.8.0.dev0</version>
+    <version>0.8.0.dev0</version>
     <name>IMOD-NewModel</name>
     <software_list>
 		<software id="0">
@@ -232,10 +232,9 @@
 		<segment id="1" parent_id="0">
 			<biological_annotation>
 				<name>Microtubules</name>
+				
 				<description>Microtubules</description>
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>0.</red>
                 <green>1.</green>
@@ -252,10 +251,9 @@
 		<segment id="2" parent_id="0">
 			<biological_annotation>
 				<name>chromosome boundary</name>
+				
 				<description>chromosome boundary</description>
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>1.</red>
                 <green>1.</green>
@@ -272,10 +270,9 @@
 		<segment id="3" parent_id="0">
 			<biological_annotation>
 				<name>round vesicles</name>
+				
 				<description>round vesicles</description>
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>1.</red>
                 <green>0.023529412224889</green>
@@ -287,10 +284,9 @@
 		<segment id="4" parent_id="0">
 			<biological_annotation>
 				<name>Irregular vesicles</name>
+				
 				<description>Irregular vesicles</description>
-				<external_references>
-				</external_references>
-			</biological_annotation>
+				</biological_annotation>
 			<colour>
                 <red>0.</red>
                 <green>1.</green>

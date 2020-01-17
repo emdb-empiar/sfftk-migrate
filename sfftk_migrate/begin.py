@@ -1,10 +1,17 @@
 import os
+import shutil
 import sys
 import warnings
+import tempfile
 from functools import partial
 
 _print = partial(print, file=sys.stderr)
 
+# the sequence of versions and how to proceed with a migration
+VERSION_LIST = [
+    '0.7.0.dev0',
+    '0.8.0.dev0'
+]
 TEST_DATA_PATH = os.path.join(os.path.dirname(__file__))
 XSL = os.path.join(TEST_DATA_PATH, 'xsl')
 XML = os.path.join(TEST_DATA_PATH, 'xml')
@@ -216,13 +223,44 @@ def get_source_version(fn):
     return source_version
 
 
-def do_migrate(args):
-    source = get_source_version(args.original)
-    stylesheet = get_stylesheet(source, args.target)
-    migrated = migrate(args.original, stylesheet)  # bytes
-    with open(args.output, 'w') as m:
-        m.write(migrated.encode('utf-8'))
-        m.flush()
+
+
+def get_migration_path(source_version, target_version, version_list=VERSION_LIST):
+    """Given the source, target versions and VERSION_LIST determine the migration path, which is a subset of the VERSION_LIST"""
+    try:
+        start = version_list.index(source_version)
+    except ValueError:
+        raise ValueError(
+            "invalid migration start: '{}' not found in VERSION_LIST={}".format(source_version, version_list))
+    try:
+        end = version_list.index(target_version)
+    except ValueError:
+        raise ValueError(
+            "invalid migration end: '{}' not found in VERSION_LIST={}".format(target_version, version_list))
+    migration_path = [(version_list[i], version_list[i + 1]) for i in range(start, end)]
+    return migration_path
+
+
+def do_migration(args):
+    """Top-level function to effect a migration given args"""
+    source_version = get_source_version(args.input)
+    migration_path = get_migration_path(source_version, args.target_version)
+    _start = args.input
+    _input = args.input.split('.')
+    root, ext = '.'.join(_input[:-1]), _input[-1]
+    for _source, _target in migration_path:
+        _end = '{root}_{target}.{ext}'.format(
+            root=root,
+            target=_target,
+            ext=ext,
+        )
+        stylesheet = get_stylesheet(_source, _target)
+        migrated = migrate(_start, stylesheet)  # bytes
+        with open(_end, 'w') as f:
+            f.write(migrated.decode('utf-8'))
+        _start = _end
+    # copy the final temp file to the output
+    shutil.copy(_end, args.output)
     return os.EX_OK
 
 
@@ -240,7 +278,7 @@ def parse_args(args, use_shlex=True):
     import argparse
     parser = argparse.ArgumentParser(prog='sff-migrate', description='Upgrade EMDB-SFF files to more recent schema')
     parser.add_argument('input', help='input XML file')
-    parser.add_argument('-t', '--target', required=True, help='the target version to migrate to')
+    parser.add_argument('-t', '--target-version', required=True, help='the target version to migrate to')
     parser.add_argument('-o', '--output', required=False, help='output file [default: <input>_<target>.xml]')
 
     args = parser.parse_args(_args)
@@ -252,7 +290,7 @@ def parse_args(args, use_shlex=True):
             os.path.dirname(args.input),
             '{root}_{target}.{ext}'.format(
                 root=root,
-                target=args.target,
+                target=args.target_version,
                 ext=ext
             )
         )

@@ -62,7 +62,7 @@ class TestUtils(unittest.TestCase):
         """Test correct arguments"""
         args = begin.parse_args("file.xml -t 1.0", use_shlex=True)
         self.assertEqual(args.input, "file.xml")
-        self.assertEqual(args.target, "1.0")
+        self.assertEqual(args.target_version, "1.0")
         self.assertEqual(args.output, "file_1.0.xml")
 
     def test_get_stylesheet(self):
@@ -81,6 +81,33 @@ class TestUtils(unittest.TestCase):
         """Obtain the version in the original"""
         source_version = begin.get_source_version(os.path.join(begin.XML, 'original.xml'))
         self.assertEqual(source_version, '1')
+        fn_v07 = os.path.join(begin.XML, 'test2.sff')
+        source_version_v07 = begin.get_source_version(fn_v07)
+        self.assertEqual(source_version_v07, '0.7.0.dev0')
+        fn_v08 = os.path.join(begin.XML, 'test2_v0.8.0.dev0.sff')
+        source_version_v08 = begin.get_source_version(fn_v08)
+        self.assertEqual(source_version_v08, '0.8.0.dev0')
+
+    def test_get_migration_path(self):
+        """Determine the sequence of migrations to perform"""
+        version_list = ['1', '2', '3', '4', '5', '6']
+        migration_path = begin.get_migration_path('2', '6', version_list=version_list)
+        self.assertEqual(migration_path, [('2', '3'), ('3', '4'), ('4', '5'), ('5', '6')])
+        # cannot find start
+        with self.assertRaisesRegex(ValueError, r".*invalid migration start.*"):
+            begin.get_migration_path('0', '6', version_list=version_list)
+        # cannot find end
+        with self.assertRaisesRegex(ValueError, r".*invalid migration end.*"):
+            begin.get_migration_path('1', '9', version_list=version_list)
+
+    def test_do_migration(self):
+        """Do an actual migration using the convenience function"""
+        cmd = "{} --target-version 0.8.0.dev0 --output my_file_out.sff".format(
+            os.path.join(begin.XML, 'test2.sff')
+        )
+        args = begin.parse_args(cmd, use_shlex=True)
+        begin._print(args)
+        begin.do_migration(args)
 
 
 class TestMigrations(unittest.TestCase):
@@ -199,7 +226,7 @@ class TestMigrations(unittest.TestCase):
 class TestEMDBSFFMigrations(unittest.TestCase):
     def test_v0_7_0_dev0_to_v0_8_0_dev0(self):
         """Test migration from v0.7.0.dev0 to v0.8.0.dev0"""
-        original = os.path.join(begin.XML, 'test7.sff')
+        original = os.path.join(begin.XML, 'test2.sff')
         stylesheet = os.path.join(begin.XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
         # phase I migration using stylesheet
         _migrated = begin.migrate(original, stylesheet)
@@ -230,7 +257,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
             'utf-8')
         # sys.stderr.write('migrated:\n' + migrated_decoded)
-        with open(os.path.join(begin.XML, 'test7_v0.8.0.dev0.sff'), 'w') as f:
+        with open(os.path.join(begin.XML, 'test2_v0.8.0.dev0.sff'), 'w') as f:
             f.write(migrated_decoded)
 
     def test_meshes_equal_v0_7_0_dev0_vs_v0_8_0_dev0(self):
@@ -337,3 +364,15 @@ class TestEMDBSFFMigrations(unittest.TestCase):
             self.assertAlmostEqual(u[0], v[0])
             self.assertAlmostEqual(u[1], v[1])
             self.assertAlmostEqual(u[2], v[2])
+
+    def test_v0_7_0_dev0_to_v0_8_0_dev0_shapes(self):
+        """Test that we can migrate shapes"""
+        original = os.path.join(begin.XML, 'test_shape_segmentation.sff')
+        stylesheet = os.path.join(begin.XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
+        _migrated = begin.migrate(original, stylesheet)
+        migrated = etree.ElementTree(etree.XML(_migrated))
+        migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
+            'utf-8')
+        sys.stderr.write(migrated_decoded)
+        with open(os.path.join(begin.XML, 'test_shape_segmentation_v0.8.0.dev0.sff'), 'w') as f:
+            f.write(migrated_decoded)

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<segmentation>
+    <version>0.7.0.dev0</version>
+    <name>batch</name>
+    <software>
+        <name>flags</name>
+        <version>compress</version>
+        <processingDetails>Aliquam sociis feugiat labore, veniam conguenulla vehicula.</processingDetails>
+    </software>
+    <transformList>
+        <transformationMatrix id="0">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="1">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="2">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="3">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="4">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="5">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="6">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="7">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="8">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="9">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="10">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="11">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="12">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="13">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="14">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="15">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="16">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+        <transformationMatrix id="17">
+            <rows>3</rows>
+            <cols>4</cols>
+            <data>0 1 2 3 4 5 6 7 8 9 10 11</data>
+        </transformationMatrix>
+    </transformList>
+    <primaryDescriptor>shapePrimitiveList</primaryDescriptor>
+    <segmentList>
+        <segment id="1" parentID="0">
+            <shapePrimitiveList>
+                <cone id="0">
+                    <height>37.070668215404602</height>
+                    <bottomRadius>25.475612876243947</bottomRadius>
+                    <transformId>0</transformId>
+                </cone>
+                <cone id="1">
+                    <height>39.730445512435828</height>
+                    <bottomRadius>22.418065615924597</bottomRadius>
+                    <transformId>1</transformId>
+                </cone>
+                <cone id="2">
+                    <height>49.757252470346259</height>
+                    <bottomRadius>93.983454861597437</bottomRadius>
+                    <transformId>2</transformId>
+                </cone>
+                <cuboid id="3">
+                    <x>2.365586441515</x>
+                    <y>35.019352996484074</y>
+                    <z>18.032738768049363</z>
+                    <transformId>3</transformId>
+                </cuboid>
+                <cuboid id="4">
+                    <x>39.801633828638785</x>
+                    <y>9.596061289177737</y>
+                    <z>98.102036923619778</z>
+                    <transformId>4</transformId>
+                </cuboid>
+                <cylinder id="5">
+                    <height>33.451489446285755</height>
+                    <diameter>8.75704974753695</diameter>
+                    <transformId>5</transformId>
+                </cylinder>
+                <ellipsoid id="6">
+                    <x>11.771433306580537</x>
+                    <y>73.818701819276299</y>
+                    <z>87.750580089138694</z>
+                    <transformId>6</transformId>
+                </ellipsoid>
+                <ellipsoid id="7">
+                    <x>44.653904843960724</x>
+                    <y>65.657794302789227</y>
+                    <z>43.695458323442416</z>
+                    <transformId>7</transformId>
+                </ellipsoid>
+                <cone id="8">
+                    <height>75.26213442253686</height>
+                    <bottomRadius>39.109739346072601</bottomRadius>
+                    <transformId>8</transformId>
+                </cone>
+            </shapePrimitiveList>
+        </segment>
+        <segment id="2" parentID="0">
+            <shapePrimitiveList>
+                <cone id="0">
+                    <height>0.020925217117995</height>
+                    <bottomRadius>18.193718267850045</bottomRadius>
+                    <transformId>9</transformId>
+                </cone>
+                <cone id="1">
+                    <height>29.364391699240912</height>
+                    <bottomRadius>0.688678195504122</bottomRadius>
+                    <transformId>10</transformId>
+                </cone>
+                <cone id="2">
+                    <height>3.463272060998102</height>
+                    <bottomRadius>79.808730156546176</bottomRadius>
+                    <transformId>11</transformId>
+                </cone>
+                <cuboid id="3">
+                    <x>11.238043413540044</x>
+                    <y>61.629433523103394</y>
+                    <z>48.231691085570674</z>
+                    <transformId>12</transformId>
+                </cuboid>
+                <cuboid id="4">
+                    <x>80.023228411275596</x>
+                    <y>10.406806979599681</y>
+                    <z>94.907902191460565</z>
+                    <transformId>13</transformId>
+                </cuboid>
+                <cylinder id="5">
+                    <height>89.955775259336363</height>
+                    <diameter>14.971703937881697</diameter>
+                    <transformId>14</transformId>
+                </cylinder>
+                <ellipsoid id="6">
+                    <x>35.345783765479986</x>
+                    <y>37.666883761996594</y>
+                    <z>62.431033343031231</z>
+                    <transformId>15</transformId>
+                </ellipsoid>
+                <ellipsoid id="7">
+                    <x>85.104190603754788</x>
+                    <y>43.067383884087583</y>
+                    <z>30.869954184783666</z>
+                    <transformId>16</transformId>
+                </ellipsoid>
+                <cone id="8">
+                    <height>64.099944274332259</height>
+                    <bottomRadius>25.44362598200436</bottomRadius>
+                    <transformId>17</transformId>
+                </cone>
+            </shapePrimitiveList>
+        </segment>
+    </segmentList>
+</segmentation>
