@@ -10,4 +10,9 @@ setup(
     author_email='pkorir@ebi.ac.uk, paul.korir@gmail.com',
     description='Migrate older EMDB-SFF files to newer versions',
     install_requires=['lxml'],
+    entry_points={
+        'console_scripts': [
+            'sff-migrate = sfftk_migrate.begin:main',
+        ]
+    },
 )

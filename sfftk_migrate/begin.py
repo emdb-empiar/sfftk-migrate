@@ -1,9 +1,14 @@
+import argparse
+import base64
+import importlib
 import os
-import shutil
+import shlex
+import struct
 import sys
 import warnings
-import tempfile
 from functools import partial
+
+from lxml import etree
 
 _print = partial(print, file=sys.stderr)
 
@@ -15,6 +20,7 @@ VERSION_LIST = [
 TEST_DATA_PATH = os.path.join(os.path.dirname(__file__))
 XSL = os.path.join(TEST_DATA_PATH, 'xsl')
 XML = os.path.join(TEST_DATA_PATH, 'xml')
+MIGRATIONS_PACKAGE = 'sfftk_migrate.migrations'
 ENDIANNESS = {
     "little": "<",
     "big": ">",
@@ -41,10 +47,6 @@ etree.XSLT() takes an ElementTree or Element object and returns a transformer ob
 a transformer object should take an ElementTree (but seems to also take Element objects)
 the result of a transformation is an _XSLTResultTree which behaves like an ElementTree but submits to str()
 """
-
-from lxml import etree
-import struct
-import base64
 
 # todo: editing complex elements
 """
@@ -87,99 +89,13 @@ def _check(obj, klass, exception=Exception, message="object '{}' is not of class
             raise exception(message)
 
 
-def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endianness="little"):
-    """Given a mesh from the v0.7.0.dev0 we convert it to a mesh in v0.8.0.dev0"""
-    # assertions
-    try:
-        assert endianness in ["little", "big"]
-    except AssertionError:
-        raise ValueError("invalid endianness: {}".format(endianness))
-    try:
-        assert triangles_mode in ["int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64"]
-    except AssertionError:
-        raise ValueError("invalid triangles mode: {}".format(triangles_mode))
-    try:
-        assert vertices_mode in ["float32", "float64"]
-    except AssertionError:
-        raise ValueError("invalid vertices mode: {}".format(vertices_mode))
-
-    surface_vertex_dict = dict()  # dictionary to remap vertex ids
-    surface_vertices = list()
-    normal_vertices = list()
-    vertex_list = next(mesh.iter("vertexList"))
-    i = 0
-    for vertex in vertex_list.iter("v"):
-        designation = vertex.get("designation")
-        x, y, z = vertex.xpath("*")
-        # 'surface' vertex by default
-        if designation is None or designation == "surface":
-            surface_vertex_dict[int(vertex.get("vID"))] = len(surface_vertices) // 3  # len = index
-            surface_vertices += [float(x.text), float(y.text), float(z.text)]
-        else:
-            normal_vertices += [float(x.text), float(y.text), float(z.text)]
-    # _print(surface_vertex_dict)
-    # sanity check: normal_vertices should have the same length as surface_vertices list if it exists
-    if normal_vertices:
-        try:
-            assert len(surface_vertices) == len(normal_vertices)
-        except AssertionError:
-            raise ValueError("surface and normal vertice lists are of different length")
-    bin_surface_vertices = struct.pack(
-        "{}{}{}".format(ENDIANNESS[endianness], len(surface_vertices), MODE[vertices_mode]), *surface_vertices)
-    base64_surface_vertices = base64.b64encode(bin_surface_vertices)
-    bin_normal_vertices = struct.pack(
-        "{}{}{}".format(ENDIANNESS[endianness], len(normal_vertices), MODE[vertices_mode]), *normal_vertices)
-    base64_normal_vertices = base64.b64encode(bin_normal_vertices)
-    surface_vertices_element = etree.Element("vertices", num_vertices=str(len(surface_vertices) // 3),
-                                             mode=vertices_mode,
-                                             endianness=endianness, data=base64_surface_vertices)
-    surface_vertices_element.tail = "\n\t\t\t\t\t"
-    normal_vertices_element = etree.Element("normals", num_normals=str(len(normal_vertices) // 3), mode=vertices_mode,
-                                            endianness=endianness, data=base64_normal_vertices)
-    normal_vertices_element.tail = "\n\t\t\t\t\t"
-
-    # work on triangles
-    triangles = list()
-    triangle_list = next(mesh.iter("polygonList"))
-    for triangle in triangle_list.iter("P"):
-        vertex_indices = triangle.xpath("*")
-        if len(vertex_indices) == 3:  # no normals
-            _v1, _v2, _v3 = vertex_indices
-            v1 = int(_v1.text)
-            v2 = int(_v2.text)
-            v3 = int(_v3.text)
-        elif len(vertex_indices) == 6:  # s, n, s, n, s, n
-            _v1, _n1, _v2, _n2, _v3, _n3 = vertex_indices
-            # get the new index
-            v1 = surface_vertex_dict[int(_v1.text)]
-            v2 = surface_vertex_dict[int(_v2.text)]
-            v3 = surface_vertex_dict[int(_v3.text)]
-        else:
-            raise ValueError("invalid polygon: should have 3 or 6 vertices only")
-
-        triangles += [v1, v2, v3]
-    # sanity check: there should be no triangle with a vertex id larger than the length of vertices/normals
-    try:
-        assert max(triangles) < len(surface_vertices)
-    except AssertionError:
-        raise ValueError("triangle with non-existent vertex found!")
-    bin_triangles = struct.pack("{}{}{}".format(ENDIANNESS[endianness], len(triangles), MODE[triangles_mode]),
-                                *triangles)
-    base64_triangles = base64.b64encode(bin_triangles)
-    triangles_element = etree.Element("triangles", num_triangles=str(len(triangles) // 3), mode=triangles_mode,
-                                      endianness=endianness, data=base64_triangles)
-    triangles_element.tail = "\n\t\t\t\t"
-
-    return surface_vertices_element, normal_vertices_element, triangles_element
-
-
 def _decode_data(data64, length, mode, endianness="little"):
     bin_data = base64.b64decode(data64)
     data = struct.unpack("{}{}{}".format(ENDIANNESS[endianness], length * 3, MODE[mode]), bin_data)
     return data
 
 
-def migrate(original, stylesheet, verbose=False, **kwargs):
+def migrate_by_stylesheet(original, stylesheet, verbose=False, **kwargs):
     """
     Migrate `original` according to `stylesheet`
 
@@ -195,7 +111,10 @@ def migrate(original, stylesheet, verbose=False, **kwargs):
     # _print('original_doc:', original_elements)
     stylesheet_doc = etree.parse(stylesheet)  # ElementTree
     transform = etree.XSLT(stylesheet_doc)  # transformer
-    migrated = transform(original_doc, **kwargs)  # XSLTResultTree (like ElementTree)
+    _kwargs = dict()
+    for kw in kwargs:
+        _kwargs[kw] = etree.XSLT.strparam(kwargs[kw])
+    migrated = transform(original_doc, **_kwargs)  # XSLTResultTree (like ElementTree)
     migrated_elements = set([migrated.getpath(element) for element in migrated.iter()])
     # _print('migrated_doc:', migrated_elements)
     dropped_fields = original_elements.difference(migrated_elements)
@@ -223,8 +142,6 @@ def get_source_version(fn):
     return source_version
 
 
-
-
 def get_migration_path(source_version, target_version, version_list=VERSION_LIST):
     """Given the source, target versions and VERSION_LIST determine the migration path, which is a subset of the VERSION_LIST"""
     try:
@@ -241,27 +158,78 @@ def get_migration_path(source_version, target_version, version_list=VERSION_LIST
     return migration_path
 
 
-def do_migration(args):
-    """Top-level function to effect a migration given args"""
-    source_version = get_source_version(args.input)
-    migration_path = get_migration_path(source_version, args.target_version)
-    _start = args.input
-    _input = args.input.split('.')
-    root, ext = '.'.join(_input[:-1]), _input[-1]
-    for _source, _target in migration_path:
-        _end = '{root}_{target}.{ext}'.format(
-            root=root,
-            target=_target,
-            ext=ext,
-        )
-        stylesheet = get_stylesheet(_source, _target)
-        migrated = migrate(_start, stylesheet)  # bytes
-        with open(_end, 'w') as f:
-            f.write(migrated.decode('utf-8'))
-        _start = _end
-    # copy the final temp file to the output
-    shutil.copy(_end, args.output)
+def get_output_name(input, target):
+    _input = input.split('.')
+    root = '.'.join(_input[:-1])
+    ext = _input[-1]
+    output = '{root}_v{target}.{ext}'.format(
+        root=root,
+        target=target,
+        ext=ext,
+    )
+    return output
+
+
+# Alternative implementation of do_migrate that calls additional functions e.g. for migrating meshes
+def do_migration(args, value_list=None, version_list=VERSION_LIST):
+    """Top-level function to effect a migration given args
+
+    Effect the requested migration according to the `version_list`. Passes all `kwargs` on to the
+    actual `migrate` function. `kwargs` should be a dictionary with string values.
+    """
+    source_version = get_source_version(args.infile)
+    migration_path = get_migration_path(source_version, args.target_version, version_list=version_list)
+    if args.verbose:
+        _print("migration path: ")
+        for _path in migration_path:
+            _print("\t* {} ---> {}".format(*_path))
+    input = args.infile
+    for source, target in migration_path:
+        if args.verbose:
+            _print("preparing to migrate v{source} to v{target}...".format(
+                source=source,
+                target=target,
+            ))
+        module = get_module(source, target)
+        if 'PARAM_LIST' in dir(module):
+            params = get_params(module.PARAM_LIST, value_list=value_list)
+        else:
+            params = dict()  # empty dictionary
+        stylesheet = get_stylesheet(source, target)
+        if args.verbose:
+            _print("using stylesheet {}...".format(stylesheet))
+        outfile = get_output_name(input, target)
+        if args.verbose:
+            _print("migrating to {}".format(outfile))
+        input = module.migrate(input, outfile, stylesheet, args, **params)
     return os.EX_OK
+
+
+def get_module(source, target, prefix="migrate"):
+    ".{prefix}_v{source}_to_v{target}"
+    module_name = "{package}.{prefix}_v{source}_to_v{target}".format(
+        package=MIGRATIONS_PACKAGE,
+        prefix=prefix,
+        source=source.replace('.', '_'),
+        target=target.replace('.', '_'),
+    )
+    module = importlib.import_module(module_name)
+    return module
+
+
+def get_params(param_list, value_list=None):
+    params = dict()
+    for i, param in enumerate(param_list):
+        if value_list:
+            try:
+                assert len(param_list) == len(value_list)
+            except AssertionError:
+                raise ValueError("incompatible lengths for param_list and value_list; they should be equal")
+            param_value = value_list[i]
+        else:
+            param_value = input("{}: ".format(param))
+        params[param] = param_value
+    return params
 
 
 def get_stylesheet(source, target, prefix="migrate"):
@@ -273,21 +241,24 @@ def get_stylesheet(source, target, prefix="migrate"):
 
 def parse_args(args, use_shlex=True):
     if use_shlex:
-        import shlex
         _args = shlex.split(args)
-    import argparse
+    else:
+        _args = args
+
     parser = argparse.ArgumentParser(prog='sff-migrate', description='Upgrade EMDB-SFF files to more recent schema')
-    parser.add_argument('input', help='input XML file')
-    parser.add_argument('-t', '--target-version', required=True, help='the target version to migrate to')
-    parser.add_argument('-o', '--output', required=False, help='output file [default: <input>_<target>.xml]')
+    parser.add_argument('infile', help='input XML file')
+    parser.add_argument('-t', '--target-version', default=VERSION_LIST[-1],
+                        help='the target version to migrate to [default: {}]'.format(VERSION_LIST[-1]))
+    parser.add_argument('-o', '--outfile', required=False, help='outfile file [default: <infile>_<target>.xml]')
+    parser.add_argument('-v', '--verbose', default=False, action='store_true', help='verbose output [default: False]')
 
     args = parser.parse_args(_args)
 
-    if args.output is None:
-        input_fn = args.input.split('.')
+    if args.outfile is None:
+        input_fn = args.infile.split('.')
         root, ext = '.'.join(input_fn[:-1]), input_fn[-1]
-        args.output = os.path.join(
-            os.path.dirname(args.input),
+        args.outfile = os.path.join(
+            os.path.dirname(args.infile),
             '{root}_{target}.{ext}'.format(
                 root=root,
                 target=args.target_version,
@@ -299,13 +270,17 @@ def parse_args(args, use_shlex=True):
 
 def main():
     # migrated = migrate('original.xml', 'original_to_add_field.xsl')
-    _migrated = migrate(os.path.join(XML, 'original.xml'), os.path.join(XSL, 'original_to_drop_field.xsl'))  # bytes
+    # _migrated = migrate_by_stylesheet(os.path.join(XML, 'original.xml'),
+    #                                   os.path.join(XSL, 'original_to_drop_field.xsl'))  # bytes
     # convert the migrated result to a byte sequence
-    migrated = etree.ElementTree(etree.XML(_migrated))
-    pp = etree.tostring(migrated, pretty_print=True, xml_declaration=True, encoding='utf-8')
-    sys.stderr.write(pp.decode('utf-8'))
-
-    return os.EX_OK
+    # migrated = etree.ElementTree(etree.XML(_migrated))
+    # pp = etree.tostring(migrated, pretty_print=True, xml_declaration=True, encoding='utf-8')
+    # sys.stderr.write(pp.decode('utf-8'))
+    args = parse_args(sys.argv[1:], use_shlex=False)
+    if args.verbose:
+        _print("migrating {} to {}...".format(args.infile, args.outfile))
+    status = do_migration(args)
+    return status
 
 
 if __name__ == "__main__":
