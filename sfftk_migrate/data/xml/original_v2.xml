@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ASCII'?>
+<segmentation>
+	<name>Test</name>
+	<version>2</version>
+	<segment id="1">
+        <name>Segment1</name>
+	</segment>
+<details>29f021405a3e0854568234435c11e24f3e90e86f</details>
+</segmentation>

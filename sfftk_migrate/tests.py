@@ -6,7 +6,7 @@ import unittest
 
 from lxml import etree
 
-from . import XSL, XML
+from . import XSL, XML, VERSION_LIST
 from .main import parse_args
 from .core import get_module, get_stylesheet, get_source_version, get_migration_path
 from .migrate import migrate_by_stylesheet, do_migration, get_params
@@ -66,10 +66,10 @@ class TestUtils(unittest.TestCase):
 
     def test_parse_args(self):
         """Test correct arguments"""
-        args = parse_args("file.xml -t 1.0", use_shlex=True)
+        args = parse_args("file.xml -t 1.0")
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.target_version, "1.0")
-        self.assertEqual(args.outfile, "file_1.0.xml")
+        self.assertEqual(args.outfile, "file_v1.0.xml")
 
     def test_get_stylesheet(self):
         """Given versions return the correct stylesheet to use"""
@@ -111,10 +111,11 @@ class TestUtils(unittest.TestCase):
     def test_do_migration_example(self):
         """Toy migration example"""
         version_list = ['1', '2']
-        cmd = "{input} --target-version 2 --outfile my_file_out.xml".format(
-            input=os.path.join(XML, "original.xml")
+        cmd = "{infile} --target-version 2 --outfile {outfile}".format(
+            infile=os.path.join(XML, "original.xml"),
+            outfile=os.path.join(XML, "my_output.xml")
         )
-        args = parse_args(cmd, use_shlex=True)
+        args = parse_args(cmd)
         _text = secrets.token_hex(20)
         status = do_migration(
             args,
@@ -126,13 +127,14 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(status, os.EX_OK)
         output = etree.parse(_output)
         self.assertEqual(output.xpath('/segmentation/details/text()')[0], _text)
+        os.remove(args.outfile)
 
     def test_do_migration(self):
         """Do an actual migration using the convenience function"""
         cmd = "{input} --target-version 0.8.0.dev0 --outfile my_file_out.sff".format(
             input=os.path.join(XML, 'test2.sff')
         )
-        args = parse_args(cmd, use_shlex=True)
+        args = parse_args(cmd)
         _print(args)
         do_migration(
             args
@@ -424,3 +426,26 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         sys.stderr.write(migrated_decoded)
         with open(os.path.join(XML, 'test_shape_segmentation_v0.8.0.dev0.sff'), 'w') as f:
             f.write(migrated_decoded)
+
+
+class TestMain(unittest.TestCase):
+    def test_parse_args(self):
+        """Test parse_args function"""
+        cmd = "file.xml"
+        args = parse_args(cmd)
+        self.assertEqual(args.infile, "file.xml")
+        self.assertEqual(args.outfile, "file_v{}.xml".format(VERSION_LIST[-1]))
+
+    def test_parse_args_outfile(self):
+        """Test that outfile arg is honoured"""
+        cmd = "file.xml -o nothing.xml"
+        args = parse_args(cmd)
+        self.assertEqual(args.outfile, "nothing.xml")
+
+    def test_no_shlex(self):
+        """Test not using shlex"""
+        cmd = ["file.xml", "-o", "nothing.xml"]
+        args = parse_args(cmd, use_shlex=False)
+        self.assertEqual(args.infile, "file.xml")
+        self.assertEqual(args.outfile, "nothing.xml")
+

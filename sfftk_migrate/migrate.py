@@ -5,6 +5,7 @@ migrate
 This module implements top-level functions that effect a migration.
 """
 import os
+import shutil
 import warnings
 
 from lxml import etree
@@ -106,4 +107,7 @@ def do_migration(args, value_list=None, version_list=VERSION_LIST):
         if args.verbose:
             _print("migrating to {}".format(outfile))
         infile = module.migrate(infile, outfile, stylesheet, args, **params)
+    # only copy if the last file is not the same as the expected final output
+    if args.outfile != outfile:
+        shutil.copy(outfile, args.outfile)
     return os.EX_OK

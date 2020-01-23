@@ -39,13 +39,17 @@ Migrations are effected using the `migrate.do_migration` function which has the 
 
 Lessons learned in using `lxml`
 ---------------------------------
-etree.parse() takes XML files/file objects and returns an ElementTree
-etree.XML() takes a string and returns an Element regardless of the content
-etree.ElementTree(root_element) converts an element into an ElementTree
-etree.XSLT() takes an ElementTree or Element object and returns a transformer object
-a transformer object should take an ElementTree (but seems to also take Element objects)
-the result of a transformation is an _XSLTResultTree which behaves like an ElementTree but submits to str()
 
+* etree.parse() takes XML files/file objects and returns an ElementTree
+
+* etree.XML() takes a string and returns an Element regardless of the content
+
+* etree.ElementTree(root_element) converts an element into an ElementTree
+
+* etree.XSLT() takes an ElementTree or Element object and returns a transformer object;
+a transformer object should take an ElementTree (but seems to also take Element objects)
+
+* the result of a transformation is an _XSLTResultTree which behaves like an ElementTree but submits to str()
 
 from: https://lxml.de/xpathxslt.html#xslt-result-objects
 It is possible to pass parameters, in the form of XPath expressions, to the XSLT template:

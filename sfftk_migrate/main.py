@@ -1,9 +1,9 @@
 import argparse
-import os
 import shlex
 import sys
 
 from . import VERSION_LIST
+from .core import get_output_name
 from .migrate import do_migration
 from .utils import _print
 
@@ -32,21 +32,12 @@ def parse_args(args, use_shlex=True):
     args = parser.parse_args(_args)
 
     if args.outfile is None:
-        input_fn = args.infile.split('.')
-        root, ext = '.'.join(input_fn[:-1]), input_fn[-1]
-        args.outfile = os.path.join(
-            os.path.dirname(args.infile),
-            '{root}_{target}.{ext}'.format(
-                root=root,
-                target=args.target_version,
-                ext=ext
-            )
-        )
+        args.outfile = get_output_name(args.infile, args.target_version)
     return args
 
 
 def main():
-    args = parse_args(sys.argv[1:], use_shlex=False) # no shlex for list of args
+    args = parse_args(sys.argv[1:], use_shlex=False)  # no shlex for list of args
     if args.verbose:
         _print("migrating {} to {}...".format(args.infile, args.outfile))
     status = do_migration(args)
