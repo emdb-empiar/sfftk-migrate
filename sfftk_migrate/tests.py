@@ -6,8 +6,11 @@ import unittest
 
 from lxml import etree
 
-import sfftk_migrate.migrations.migrate_v0_7_0_dev0_to_v0_8_0_dev0
-from . import begin
+from . import XSL, XML
+from .main import parse_args
+from .core import get_module, get_stylesheet, get_source_version, get_migration_path
+from .migrate import migrate_by_stylesheet, do_migration, get_params
+from .utils import _print, _check, _decode_data
 
 replace_list = [
     ('\n', ''),
@@ -30,8 +33,8 @@ def compare_elements(el1, el2):
 
     :return: True or False
     """
-    begin._check(el1, (etree._Element), TypeError)
-    begin._check(el2, (etree._Element), TypeError)
+    _check(el1, (etree._Element), TypeError)
+    _check(el2, (etree._Element), TypeError)
     # https://stackoverflow.com/questions/7905380/testing-equivalence-of-xml-etree-elementtree
     if el1.tag != el2.tag:
         return False
@@ -50,74 +53,74 @@ class TestUtils(unittest.TestCase):
     def test_check(self):
         """Test that _check works"""
         with self.assertRaisesRegex(TypeError, r"object '1' is not of class <class 'str'>"):
-            begin._check(1, str, TypeError)
+            _check(1, str, TypeError)
 
     def test_migrate(self):
         """Test that migrate works"""
 
         # exceptions
         with self.assertRaises(TypeError):
-            begin.migrate_by_stylesheet(1, 2)
+            migrate_by_stylesheet(1, 2)
         with self.assertRaises(IOError):
-            begin.migrate_by_stylesheet('file.xml', 'file.xsl')
+            migrate_by_stylesheet('file.xml', 'file.xsl')
 
     def test_parse_args(self):
         """Test correct arguments"""
-        args = begin.parse_args("file.xml -t 1.0", use_shlex=True)
+        args = parse_args("file.xml -t 1.0", use_shlex=True)
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.target_version, "1.0")
         self.assertEqual(args.outfile, "file_1.0.xml")
 
     def test_get_stylesheet(self):
         """Given versions return the correct stylesheet to use"""
-        stylesheet = begin.get_stylesheet("1", "2")
+        stylesheet = get_stylesheet("1", "2")
         self.assertEqual(os.path.basename(stylesheet), 'migrate_v1_to_v2.xsl')
         self.assertTrue(os.path.exists(stylesheet))
-        begin._print(stylesheet)
-        original = os.path.join(begin.XML, 'original.xml')
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet,
-                                                segmentation_details="Nothing much")
+        _print(stylesheet)
+        original = os.path.join(XML, 'original.xml')
+        _migrated = migrate_by_stylesheet(original, stylesheet,
+                                          segmentation_details="Nothing much")
         migrated = etree.ElementTree(etree.XML(_migrated))
         sys.stderr.write('migrated:\n' + etree.tostring(migrated).decode('utf-8'))
         # self.assertTrue(False)
 
     def test_get_source_version(self):
         """Obtain the version in the original"""
-        source_version = begin.get_source_version(os.path.join(begin.XML, 'original.xml'))
+        source_version = get_source_version(os.path.join(XML, 'original.xml'))
         self.assertEqual(source_version, '1')
-        fn_v07 = os.path.join(begin.XML, 'test2.sff')
-        source_version_v07 = begin.get_source_version(fn_v07)
+        fn_v07 = os.path.join(XML, 'test2.sff')
+        source_version_v07 = get_source_version(fn_v07)
         self.assertEqual(source_version_v07, '0.7.0.dev0')
-        fn_v08 = os.path.join(begin.XML, 'test2_v0.8.0.dev0.sff')
-        source_version_v08 = begin.get_source_version(fn_v08)
+        fn_v08 = os.path.join(XML, 'test2_v0.8.0.dev0.sff')
+        source_version_v08 = get_source_version(fn_v08)
         self.assertEqual(source_version_v08, '0.8.0.dev0')
 
     def test_get_migration_path(self):
         """Determine the sequence of migrations to perform"""
         version_list = ['1', '2', '3', '4', '5', '6']
-        migration_path = begin.get_migration_path('2', '6', version_list=version_list)
+        migration_path = get_migration_path('2', '6', version_list=version_list)
         self.assertEqual(migration_path, [('2', '3'), ('3', '4'), ('4', '5'), ('5', '6')])
         # cannot find start
         with self.assertRaisesRegex(ValueError, r".*invalid migration start.*"):
-            begin.get_migration_path('0', '6', version_list=version_list)
+            get_migration_path('0', '6', version_list=version_list)
         # cannot find end
         with self.assertRaisesRegex(ValueError, r".*invalid migration end.*"):
-            begin.get_migration_path('1', '9', version_list=version_list)
+            get_migration_path('1', '9', version_list=version_list)
 
     def test_do_migration_example(self):
         """Toy migration example"""
         version_list = ['1', '2']
         cmd = "{input} --target-version 2 --outfile my_file_out.xml".format(
-            input=os.path.join(begin.XML, "original.xml")
+            input=os.path.join(XML, "original.xml")
         )
-        args = begin.parse_args(cmd, use_shlex=True)
+        args = parse_args(cmd, use_shlex=True)
         _text = secrets.token_hex(20)
-        status = begin.do_migration(
+        status = do_migration(
             args,
             value_list=[_text],
             version_list=version_list,
         )
-        _output = os.path.join(begin.XML, "original_v2.xml")
+        _output = os.path.join(XML, "original_v2.xml")
         self.assertTrue(os.path.exists(_output))
         self.assertEqual(status, os.EX_OK)
         output = etree.parse(_output)
@@ -126,42 +129,42 @@ class TestUtils(unittest.TestCase):
     def test_do_migration(self):
         """Do an actual migration using the convenience function"""
         cmd = "{input} --target-version 0.8.0.dev0 --outfile my_file_out.sff".format(
-            input=os.path.join(begin.XML, 'test2.sff')
+            input=os.path.join(XML, 'test2.sff')
         )
-        args = begin.parse_args(cmd, use_shlex=True)
-        begin._print(args)
-        begin.do_migration(
+        args = parse_args(cmd, use_shlex=True)
+        _print(args)
+        do_migration(
             args
         )
 
     def test_get_module(self):
         """Check that we can get the right module for this migration"""
-        module = begin.get_module('1', '2')
+        module = get_module('1', '2')
         self.assertIsInstance(module, types.ModuleType)
 
     def test_get_params(self):
         """Test getting params"""
-        module = begin.get_module('1', '2')
+        module = get_module('1', '2')
         _text = secrets.token_hex(20)
-        params = begin.get_params(module.PARAM_LIST, value_list=[_text])
+        params = get_params(module.PARAM_LIST, value_list=[_text])
         self.assertIsInstance(params, dict)
         self.assertEqual(len(params), 1)
         with self.assertRaises(ValueError):
-            begin.get_params(module.PARAM_LIST, value_list=[_text, _text])
+            get_params(module.PARAM_LIST, value_list=[_text, _text])
 
 
 class TestMigrations(unittest.TestCase):
     def test_original_to_add_field(self):
         """Test adding a field to the original"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'add_field.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_add_field.xsl')
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'add_field.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_add_field.xsl')
         # we pass the value of the `details` param as follows:
         # A = reference.xpath(<xpath>)[0]
         # etree.XSLT.strparam(A) - handle a possibly quoted string
         details_text = reference.xpath('/segmentation/details/text()')[0]
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet,
-                                                segmentation_details=details_text)  # bytes
+        _migrated = migrate_by_stylesheet(original, stylesheet,
+                                          segmentation_details=details_text)  # bytes
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
@@ -171,11 +174,11 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_to_drop_field(self):
         """Test dropping a field from the original"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'drop_field.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_drop_field.xsl')
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'drop_field.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_drop_field.xsl')
         with self.assertWarns(UserWarning):
-            _migrated = begin.migrate_by_stylesheet(original, stylesheet, verbose=True)
+            _migrated = migrate_by_stylesheet(original, stylesheet, verbose=True)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         self.assertTrue(same)
@@ -185,10 +188,10 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_to_change_field_rename_field(self):
         """Test changing a field by renaming it"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'change_field_rename_field.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_change_field_rename_field.xsl')
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet)
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'change_field_rename_field.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_field_rename_field.xsl')
+        _migrated = migrate_by_stylesheet(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         self.assertTrue(same)
@@ -198,12 +201,12 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_to_change_field_add_attribute(self):
         """Test changing a field by adding an attribute"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'change_field_add_attribute.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_change_field_add_attribute.xsl')
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'change_field_add_attribute.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_field_add_attribute.xsl')
         lang_text = reference.xpath('/segmentation/name/@lang')[0]
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet,
-                                                segmentation_name_lang=lang_text)
+        _migrated = migrate_by_stylesheet(original, stylesheet,
+                                          segmentation_name_lang=lang_text)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         self.assertTrue(same)
@@ -213,10 +216,10 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_to_change_field_drop_attribute(self):
         """Test changing a field by dropping an attribute"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'change_field_drop_attribute.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_change_field_drop_attribute.xsl')
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet)
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'change_field_drop_attribute.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_field_drop_attribute.xsl')
+        _migrated = migrate_by_stylesheet(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         self.assertTrue(same)
@@ -226,11 +229,11 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_to_change_field_change_value(self):
         """Test changing a field by changing the value"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'change_field_change_value.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_change_field_change_value.xsl')
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'change_field_change_value.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_field_change_value.xsl')
         _segment_name = reference.xpath('/segmentation/segment[@id=1]/name/text()')[0]
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet, segment_name=_segment_name)
+        _migrated = migrate_by_stylesheet(original, stylesheet, segment_name=_segment_name)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
@@ -240,10 +243,10 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_to_change_field_rename_attribute(self):
         """Test changing a field by renaming an attribute"""
-        original = os.path.join(begin.XML, 'original.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'change_field_rename_attribute.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_change_field_rename_attribute.xsl')
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet)
+        original = os.path.join(XML, 'original.xml')
+        reference = etree.parse(os.path.join(XML, 'change_field_rename_attribute.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_field_rename_attribute.xsl')
+        _migrated = migrate_by_stylesheet(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
@@ -253,10 +256,10 @@ class TestMigrations(unittest.TestCase):
 
     def test_original_list_to_change_value_list(self):
         """Test changing all the values for a list"""
-        original = os.path.join(begin.XML, 'original_list.xml')
-        reference = etree.parse(os.path.join(begin.XML, 'change_value_list.xml'))
-        stylesheet = os.path.join(begin.XSL, 'original_to_change_value_list.xsl')
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet)
+        original = os.path.join(XML, 'original_list.xml')
+        reference = etree.parse(os.path.join(XML, 'change_value_list.xml'))
+        stylesheet = os.path.join(XSL, 'original_to_change_value_list.xsl')
+        _migrated = migrate_by_stylesheet(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         same = compare_elements(reference.getroot(), migrated.getroot())
         sys.stderr.write('reference:\n' + etree.tostring(reference).decode('utf-8'))
@@ -268,22 +271,23 @@ class TestMigrations(unittest.TestCase):
 class TestEMDBSFFMigrations(unittest.TestCase):
     def test_v0_7_0_dev0_to_v0_8_0_dev0(self):
         """Test migration from v0.7.0.dev0 to v0.8.0.dev0"""
-        original = os.path.join(begin.XML, 'test2.sff')
-        stylesheet = os.path.join(begin.XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
+        original = os.path.join(XML, 'test2.sff')
+        stylesheet = os.path.join(XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
         # phase I migration using stylesheet
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet)
+        _migrated = migrate_by_stylesheet(original, stylesheet)
         # convert migration to an ElementTree object
         migrated = etree.ElementTree(etree.XML(_migrated))
 
         _original = etree.parse(original)
 
         segments = _original.xpath('/segmentation/segmentList/segment')
-        begin._print(segments)
+        _print(segments)
         segment_meshes = dict()
+        module = get_module('0.7.0.dev0', '0.8.0.dev0')
         for segment in segments:
             segment_meshes[int(segment.get("id"))] = dict()
             for mesh in segment.xpath('meshList/mesh'):
-                _vertices, _normals, _triangles = sfftk_migrate.migrations.migrate_v0_7_0_dev0_to_v0_8_0_dev0.migrate_mesh(
+                _vertices, _normals, _triangles = module.migrate_mesh(
                     mesh)
                 segment_meshes[int(segment.get("id"))][int(mesh.get("id"))] = _vertices, _normals, _triangles
 
@@ -300,7 +304,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
             'utf-8')
         # sys.stderr.write('migrated:\n' + migrated_decoded)
-        with open(os.path.join(begin.XML, 'test2_v0.8.0.dev0.sff'), 'w') as f:
+        with open(os.path.join(XML, 'test2_v0.8.0.dev0.sff'), 'w') as f:
             f.write(migrated_decoded)
 
     def test_meshes_equal_v0_7_0_dev0_vs_v0_8_0_dev0(self):
@@ -309,8 +313,8 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         We only compare surface vertices. Normal vertices correspond one-to-one to surface vertices and are not relevant
         to triangles.
         """
-        v7 = os.path.join(begin.XML, 'test7.sff')
-        v8 = os.path.join(begin.XML, 'test7_v0.8.0.dev0.sff')
+        v7 = os.path.join(XML, 'test7.sff')
+        v8 = os.path.join(XML, 'test7_v0.8.0.dev0.sff')
         fv7 = etree.parse(v7)
         fv8 = etree.parse(v8)
         fv7_segments = fv7.xpath('/segmentation/segmentList/segment')
@@ -334,7 +338,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
                             int(vertex.get('vID'))] = tuple(map(lambda v: float(v.text), vertex.xpath('*')))
                 triangle_list = next(mesh.iter('polygonList'))
                 for triangle in triangle_list:
-                    # begin._print(tuple(map(lambda t: t.text, triangle.xpath('v'))))
+                    # _print(tuple(map(lambda t: t.text, triangle.xpath('v'))))
                     vertex_ids = list(map(lambda p: int(p.text), triangle.xpath('v')))
                     if len(vertex_ids) == 3:
                         fv7_segment_meshes[int(segment.get("id"))][int(mesh.get("id"))]['triangles'][
@@ -344,7 +348,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
                             int(triangle.get('PID'))] = tuple(vertex_ids[::2]), tuple(vertex_ids[1::2])
                     else:
                         pass
-        # begin._print(fv7_segment_meshes)
+        # _print(fv7_segment_meshes)
         fv8_segments = fv8.xpath('/segmentation/segment_list/segment')
         # extract vertices, normals and triangles
         fv8_segment_meshes = dict()
@@ -353,38 +357,38 @@ class TestEMDBSFFMigrations(unittest.TestCase):
             for mesh in segment.xpath('mesh_list/mesh'):
                 fv8_segment_meshes[int(segment.get("id"))][int(mesh.get("id"))] = dict()
                 vertices = next(mesh.iter('vertices'))
-                # begin._print(vertices.keys())
-                # begin._print(vertices.get("data").encode("ASCII"))
-                vertex_list = begin._decode_data(vertices.get("data").encode('ASCII'),
-                                                 int(vertices.get("num_vertices")), vertices.get("mode"),
-                                                 vertices.get("endianness"))
+                # _print(vertices.keys())
+                # _print(vertices.get("data").encode("ASCII"))
+                vertex_list = _decode_data(vertices.get("data").encode('ASCII'),
+                                           int(vertices.get("num_vertices")), vertices.get("mode"),
+                                           vertices.get("endianness"))
                 vertex_tuples = list(zip(vertex_list[::3], vertex_list[1::3], vertex_list[2::3]))
-                # begin._print(data_vectors)
+                # _print(data_vectors)
                 fv8_segment_meshes[int(segment.get("id"))][int(mesh.get("id"))]['surface_vertices'] = dict(
                     zip(range(len(vertex_tuples)), vertex_tuples))
-                # begin._print(data_dict)
+                # _print(data_dict)
                 normals = next(mesh.iter('normals'))
-                normal_list = begin._decode_data(normals.get("data").encode('ASCII'), int(normals.get("num_normals")),
-                                                 normals.get("mode"), normals.get('endianness'))
+                normal_list = _decode_data(normals.get("data").encode('ASCII'), int(normals.get("num_normals")),
+                                           normals.get("mode"), normals.get('endianness'))
                 normal_tuples = list(zip(normal_list[::3], normal_list[1::3], normal_list[2::3]))
                 fv8_segment_meshes[int(segment.get("id"))][int(mesh.get("id"))]['normal_vertices'] = dict(
                     zip(range(len(normal_tuples)), normal_tuples))
                 triangles = next(mesh.iter('triangles'))
-                triangle_list = begin._decode_data(triangles.get("data").encode('ASCII'),
-                                                   int(triangles.get("num_triangles")),
-                                                   triangles.get("mode"), triangles.get('endianness'))
+                triangle_list = _decode_data(triangles.get("data").encode('ASCII'),
+                                             int(triangles.get("num_triangles")),
+                                             triangles.get("mode"), triangles.get('endianness'))
                 triangle_tuples = list(zip(triangle_list[::3], triangle_list[1::3], triangle_list[2::3]))
                 fv8_segment_meshes[int(segment.get("id"))][int(mesh.get("id"))]['triangles'] = dict(
                     zip(range(len(triangle_tuples)), triangle_tuples))
-        # begin._print(fv8_segment_meshes)
+        # _print(fv8_segment_meshes)
         # compare
         fv7_surface_vertices = list()
         for segment_id in fv7_segment_meshes:
             for mesh_id in fv7_segment_meshes[segment_id]:
                 for triangle_id in fv7_segment_meshes[segment_id][mesh_id]['triangles']:
                     triangle = fv7_segment_meshes[segment_id][mesh_id]['triangles'][triangle_id]
-                    # begin._print(triangle)
-                    # begin._print(triangle)
+                    # _print(triangle)
+                    # _print(triangle)
                     s0, s1, s2 = triangle[0]
                     # n0, n1, n2 = triangle[1]
                     fv7_surface_vertices += [fv7_segment_meshes[segment_id][mesh_id]['surface_vertices'][s0],
@@ -395,13 +399,13 @@ class TestEMDBSFFMigrations(unittest.TestCase):
             for mesh_id in fv8_segment_meshes[segment_id]:
                 for triangle_id in fv8_segment_meshes[segment_id][mesh_id]['triangles']:
                     triangle = fv8_segment_meshes[segment_id][mesh_id]['triangles'][triangle_id]
-                    # begin._print(triangle)
+                    # _print(triangle)
                     s0, s1, s2 = triangle
                     fv8_surface_vertices += [fv8_segment_meshes[segment_id][mesh_id]['surface_vertices'][s0],
                                              fv8_segment_meshes[segment_id][mesh_id]['surface_vertices'][s1],
                                              fv8_segment_meshes[segment_id][mesh_id]['surface_vertices'][s2]]
-        # begin._print(fv7_surface_vertices[1283])
-        # begin._print(fv8_surface_vertices[1283])
+        # _print(fv7_surface_vertices[1283])
+        # _print(fv8_surface_vertices[1283])
         self.assertEqual(len(fv7_surface_vertices), len(fv8_surface_vertices))
         for u, v in zip(fv7_surface_vertices, fv8_surface_vertices):
             self.assertAlmostEqual(u[0], v[0])
@@ -410,12 +414,12 @@ class TestEMDBSFFMigrations(unittest.TestCase):
 
     def test_v0_7_0_dev0_to_v0_8_0_dev0_shapes(self):
         """Test that we can migrate shapes"""
-        original = os.path.join(begin.XML, 'test_shape_segmentation.sff')
-        stylesheet = os.path.join(begin.XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
-        _migrated = begin.migrate_by_stylesheet(original, stylesheet)
+        original = os.path.join(XML, 'test_shape_segmentation.sff')
+        stylesheet = os.path.join(XSL, 'migrate_v0.7.0.dev0_to_v0.8.0.dev0.xsl')
+        _migrated = migrate_by_stylesheet(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
             'utf-8')
         sys.stderr.write(migrated_decoded)
-        with open(os.path.join(begin.XML, 'test_shape_segmentation_v0.8.0.dev0.sff'), 'w') as f:
+        with open(os.path.join(XML, 'test_shape_segmentation_v0.8.0.dev0.sff'), 'w') as f:
             f.write(migrated_decoded)

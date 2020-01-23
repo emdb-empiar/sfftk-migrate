@@ -12,7 +12,7 @@ setup(
     install_requires=['lxml'],
     entry_points={
         'console_scripts': [
-            'sff-migrate = sfftk_migrate.begin:main',
+            'sff-migrate = sfftk_migrate.main:main',
         ]
     },
 )

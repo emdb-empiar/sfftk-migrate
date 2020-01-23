@@ -1,4 +1,5 @@
-from ..begin import migrate_by_stylesheet, _print
+from ..migrate import migrate_by_stylesheet
+from ..utils import _print
 
 # we need a list of params to query the user for
 PARAM_LIST = [

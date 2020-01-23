@@ -3,7 +3,9 @@ import struct
 
 from lxml import etree
 
-from ..begin import migrate_by_stylesheet, _print, ENDIANNESS, MODE
+from ..migrate import migrate_by_stylesheet
+from ..utils import _print
+from .. import ENDIANNESS, MODE
 
 
 def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endianness="little"):
