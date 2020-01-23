@@ -110,4 +110,5 @@ def do_migration(args, value_list=None, version_list=VERSION_LIST):
     # only copy if the last file is not the same as the expected final output
     if args.outfile != outfile:
         shutil.copy(outfile, args.outfile)
+        os.remove(outfile)
     return os.EX_OK

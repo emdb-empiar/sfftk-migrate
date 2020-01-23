@@ -32,7 +32,7 @@ def parse_args(args, use_shlex=True):
     args = parser.parse_args(_args)
 
     if args.outfile is None:
-        args.outfile = get_output_name(args.infile, args.target_version)
+        args.outfile = get_output_name(args.infile, args.target_version, prefix="")
     return args
 
 

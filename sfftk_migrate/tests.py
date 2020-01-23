@@ -116,7 +116,7 @@ class TestUtils(unittest.TestCase):
             outfile=os.path.join(XML, "my_output.xml")
         )
         args = parse_args(cmd)
-        _text = secrets.token_hex(20)
+        _text = "48ec3e2ab568763658fc3f5430b851ceaf1593d6" #secrets.token_hex(20)
         status = do_migration(
             args,
             value_list=[_text],
@@ -131,14 +131,16 @@ class TestUtils(unittest.TestCase):
 
     def test_do_migration(self):
         """Do an actual migration using the convenience function"""
-        cmd = "{input} --target-version 0.8.0.dev0 --outfile my_file_out.sff".format(
-            input=os.path.join(XML, 'test2.sff')
+        cmd = "{infile} --target-version 0.8.0.dev0 --outfile {outfile}".format(
+            infile=os.path.join(XML, 'test2.sff'),
+            outfile=os.path.join(XML, 'my_file_out.sff')
         )
         args = parse_args(cmd)
         _print(args)
         do_migration(
             args
         )
+        os.remove(os.path.join(XML, 'my_file_out.sff'))
 
     def test_get_module(self):
         """Check that we can get the right module for this migration"""

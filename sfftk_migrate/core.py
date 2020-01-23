@@ -51,21 +51,25 @@ def get_module(source, target, prefix="migrate"):
     return module
 
 
-def get_output_name(input, target):
+def get_output_name(input, target, prefix="tmp_"):
     """Provides a meaningful output name given the input file name
 
-    :param input:
-    :param target:
-    :return:
+    :param str input: the full path to the input file
+    :param str target: a valid version string
+    :return: the full path to the output file
+    :rtype: str
     """
-    _input = input.split('.')
+    dirname = os.path.dirname(input)
+    basename = os.path.basename(input)
+    _input = basename.split('.')
     root = '.'.join(_input[:-1])
     ext = _input[-1]
-    output = '{root}_v{target}.{ext}'.format(
+    output = os.path.join(dirname, '{prefix}{root}_v{target}.{ext}'.format(
+        prefix=prefix,
         root=root,
         target=target,
         ext=ext,
-    )
+    ))
     return output
 
 
