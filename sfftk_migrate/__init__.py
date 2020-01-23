@@ -18,7 +18,7 @@ Each migration consists of two components:
 
 The `migrate` function in (1) has the following signature:
 
-.. code:: python
+.. code-block:: python
 
     def migrate(infile, outfile, stylesheet, args, encoding='utf-8', **params):
         ...
@@ -31,7 +31,7 @@ Please reference https://www.w3schools.com/xml/xsl_intro.asp on how XSL works.
 
 Migrations are effected using the `migrate.do_migration` function which has the following signature:
 
-.. code:: python
+.. code-block:: python
 
     def do_migration(args, value_list=None, version_list=VERSION_LIST):
         ...
