@@ -232,8 +232,7 @@
                     <xsl:copy-of select="./colour"/>
                     <xsl:copy-of select="$newline"/>
                     <xsl:copy-of select="$tab-3"/>
-                    <xsl:choose>
-                        <xsl:when test="./threeDVolume">
+                    <xsl:if test="./threeDVolume">
                             <three_d_volume>
                                 <xsl:copy-of select="$newline"/>
                                 <xsl:copy-of select="$tab-4"/>
@@ -255,8 +254,8 @@
                                 </xsl:choose>
                                 <xsl:copy-of select="$tab-3"/>
                             </three_d_volume>
-                        </xsl:when>
-                        <xsl:when test="./meshList">
+                        </xsl:if>
+                    <xsl:if test="./meshList">
                             <mesh_list>
                                 <xsl:for-each select="./meshList/mesh">
                                     <xsl:copy-of select="$newline"/>
@@ -285,8 +284,8 @@
                                 <xsl:copy-of select="$newline"/>
                                 <xsl:copy-of select="$tab-3"/>
                             </mesh_list>
-                        </xsl:when>
-                        <xsl:when test="./shapePrimitiveList">
+                        </xsl:if>
+                    <xsl:if test="./shapePrimitiveList">
                             <shape_primitive_list>
                                 <xsl:for-each select="./shapePrimitiveList/child::node()">
                                     <xsl:choose>
@@ -391,8 +390,168 @@
                                 <xsl:copy-of select="$newline"/>
                                 <xsl:copy-of select="$tab-3"/>
                             </shape_primitive_list>
-                        </xsl:when>
-                    </xsl:choose>
+                        </xsl:if>
+<!--                    <xsl:choose>-->
+<!--                        <xsl:when test="./threeDVolume">-->
+<!--                            <three_d_volume>-->
+<!--                                <xsl:copy-of select="$newline"/>-->
+<!--                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                <lattice_id>-->
+<!--                                    <xsl:value-of select="./threeDVolume/latticeId"/>-->
+<!--                                </lattice_id>-->
+<!--                                <xsl:copy-of select="$newline"/>-->
+<!--                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                <xsl:copy-of select="./threeDVolume/value"/>-->
+<!--                                <xsl:copy-of select="$newline"/>-->
+<!--                                <xsl:choose>-->
+<!--                                    <xsl:when test="./threeDVolume/transformId">-->
+<!--                                        <xsl:copy-of select="$tab-4"/>-->
+<!--                                        <transform_id>-->
+<!--                                            <xsl:value-of select="./threeDVolume/transformId"/>-->
+<!--                                        </transform_id>-->
+<!--                                        <xsl:copy-of select="$newline"/>-->
+<!--                                    </xsl:when>-->
+<!--                                </xsl:choose>-->
+<!--                                <xsl:copy-of select="$tab-3"/>-->
+<!--                            </three_d_volume>-->
+<!--                        </xsl:when>-->
+<!--                        <xsl:when test="./meshList">-->
+<!--                            <mesh_list>-->
+<!--                                <xsl:for-each select="./meshList/mesh">-->
+<!--                                    <xsl:copy-of select="$newline"/>-->
+<!--                                    <xsl:copy-of select="$tab-4"/>-->
+<!--                                    <mesh>-->
+<!--                                        <xsl:copy-of select="@id"/>-->
+<!--                                        &lt;!&ndash;                                        <xsl:copy-of select="$newline"/>&ndash;&gt;-->
+<!--                                        &lt;!&ndash;                                        <xsl:copy-of select="$tab-5"/>&ndash;&gt;-->
+<!--                                        <xsl:choose>-->
+<!--                                            <xsl:when test="./transformId">-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <transform_id>-->
+<!--                                                    <xsl:value-of select="./transformId"/>-->
+<!--                                                </transform_id>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                            </xsl:when>-->
+<!--                                            <xsl:otherwise>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                            </xsl:otherwise>-->
+<!--                                        </xsl:choose>-->
+<!--                                    </mesh>-->
+<!--                                </xsl:for-each>-->
+<!--                                <xsl:copy-of select="$newline"/>-->
+<!--                                <xsl:copy-of select="$tab-3"/>-->
+<!--                            </mesh_list>-->
+<!--                        </xsl:when>-->
+<!--                        <xsl:when test="./shapePrimitiveList">-->
+<!--                            <shape_primitive_list>-->
+<!--                                <xsl:for-each select="./shapePrimitiveList/child::node()">-->
+<!--                                    <xsl:choose>-->
+<!--                                        <xsl:when test="name() = 'cone'">-->
+<!--                                            <xsl:copy-of select="$newline"/>-->
+<!--                                            <xsl:copy-of select="$tab-4"/>-->
+<!--                                            <cone>-->
+<!--                                                <xsl:attribute name="id">-->
+<!--                                                    <xsl:value-of select="./@id"/>-->
+<!--                                                </xsl:attribute>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./height"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <bottom_radius>-->
+<!--                                                    <xsl:value-of select="./bottomRadius"/>-->
+<!--                                                </bottom_radius>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <transform_id>-->
+<!--                                                    <xsl:value-of select="./transformId"/>-->
+<!--                                                </transform_id>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                            </cone>-->
+<!--                                        </xsl:when>-->
+<!--                                        <xsl:when test="name() = 'cuboid'">-->
+<!--                                            <xsl:copy-of select="$newline"/>-->
+<!--                                            <xsl:copy-of select="$tab-4"/>-->
+<!--                                            <cuboid>-->
+<!--                                                <xsl:attribute name="id">-->
+<!--                                                    <xsl:value-of select="./@id"/>-->
+<!--                                                </xsl:attribute>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./x"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./y"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./z"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <transform_id>-->
+<!--                                                    <xsl:value-of select="./transformId"/>-->
+<!--                                                </transform_id>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                            </cuboid>-->
+<!--                                        </xsl:when>-->
+<!--                                        <xsl:when test="name() = 'cylinder'">-->
+<!--                                            <xsl:copy-of select="$newline"/>-->
+<!--                                            <xsl:copy-of select="$tab-4"/>-->
+<!--                                            <cylinder>-->
+<!--                                                <xsl:attribute name="id">-->
+<!--                                                    <xsl:value-of select="./@id"/>-->
+<!--                                                </xsl:attribute>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./height"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./diameter"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <transform_id>-->
+<!--                                                    <xsl:value-of select="./transformId"/>-->
+<!--                                                </transform_id>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                            </cylinder>-->
+<!--                                        </xsl:when>-->
+<!--                                        <xsl:when test="name() = 'ellipsoid'">-->
+<!--                                            <xsl:copy-of select="$newline"/>-->
+<!--                                            <xsl:copy-of select="$tab-4"/>-->
+<!--                                            <ellipsoid>-->
+<!--                                                <xsl:attribute name="id">-->
+<!--                                                    <xsl:value-of select="./@id"/>-->
+<!--                                                </xsl:attribute>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./x"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./y"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <xsl:copy-of select="./z"/>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-5"/>-->
+<!--                                                <transform_id>-->
+<!--                                                    <xsl:value-of select="./transformId"/>-->
+<!--                                                </transform_id>-->
+<!--                                                <xsl:copy-of select="$newline"/>-->
+<!--                                                <xsl:copy-of select="$tab-4"/>-->
+<!--                                            </ellipsoid>-->
+<!--                                        </xsl:when>-->
+<!--                                    </xsl:choose>-->
+<!--                                </xsl:for-each>-->
+<!--                                <xsl:copy-of select="$newline"/>-->
+<!--                                <xsl:copy-of select="$tab-3"/>-->
+<!--                            </shape_primitive_list>-->
+<!--                        </xsl:when>-->
+<!--                    </xsl:choose>-->
                     <xsl:copy-of select="$newline"/>
                     <xsl:copy-of select="$tab-2"/>
                 </segment>

@@ -15,4 +15,9 @@ setup(
             'sff-migrate = sfftk_migrate.main:main',
         ]
     },
+    package_data={
+        'sfftk_migrate': [
+            'stylesheets/*.xsl',
+        ],
+    }
 )

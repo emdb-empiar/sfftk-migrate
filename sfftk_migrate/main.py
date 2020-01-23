@@ -9,6 +9,14 @@ from .utils import _print
 
 
 def parse_args(args, use_shlex=True):
+    """Perform argument parsing as well as
+
+    :param args: commands with options
+    :type args: list or str
+    :param bool use_shlex: use shell lexing on the input (string) [default: True]
+    :return: an argument namespace
+    :rtype: `argparse.Namespace`
+    """
     if use_shlex:
         _args = shlex.split(args)
     else:
@@ -38,7 +46,7 @@ def parse_args(args, use_shlex=True):
 
 
 def main():
-    args = parse_args(sys.argv[1:], use_shlex=False)
+    args = parse_args(sys.argv[1:], use_shlex=False) # no shlex for list of args
     if args.verbose:
         _print("migrating {} to {}...".format(args.infile, args.outfile))
     status = do_migration(args)

@@ -10,7 +10,7 @@ PARAM_LIST = [
 def migrate(infile, outfile, stylesheet, args, encoding='utf-8', **params):
     if args.verbose:
         _print("migrating by stylesheet...")
-    migrated = migrate_by_stylesheet(infile, stylesheet, **params)  # bytes
+    migrated = migrate_by_stylesheet(infile, stylesheet, verbose=args.verbose, **params)  # bytes
     if args.verbose:
         _print("writing output to {}...".format(outfile))
     with open(outfile, 'w') as f:

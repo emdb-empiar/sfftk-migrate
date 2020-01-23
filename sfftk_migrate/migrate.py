@@ -1,3 +1,9 @@
+"""
+migrate
+=======
+
+This module implements top-level functions that effect a migration.
+"""
 import os
 import warnings
 
@@ -9,6 +15,14 @@ from .utils import _check, _print
 
 
 def get_params(param_list, value_list=None):
+    """Collect additional params to be used for XSL params
+
+    :param list param_list: a list of params; usually specified in the migration module with `PARAM_LIST` constant
+    :param list value_list: a list of values to be used when constructing the params dictionary; if this is not
+        provided then the user will be prompted to enter a value for each param
+    :return: a dictionary of params to be use in the XSL
+    :rtype: dict
+    """
     params = dict()
     for i, param in enumerate(param_list):
         if value_list:
@@ -27,7 +41,7 @@ def migrate_by_stylesheet(original, stylesheet, verbose=False, **kwargs):
     """Migrate `original` according to `stylesheet`
 
     :param str original: the name of an XML file
-    :param str stylesheet: the name of an XSLT file
+    :param str stylesheet: the name of an XSL file
     :return: the transformed XML document
     :rtype: bytes
     """
@@ -55,18 +69,25 @@ def migrate_by_stylesheet(original, stylesheet, verbose=False, **kwargs):
 
 
 def do_migration(args, value_list=None, version_list=VERSION_LIST):
-    """Top-level function to effect a migration given args
+    """Top-level function to effect a migration given `args`
 
     Effect the requested migration according to the `version_list`. Passes all `kwargs` on to the
     actual `migrate` function. `kwargs` should be a dictionary with string values.
+
+    :param args: argument namespace
+    :type args: `argparse.Namespace`
+    :param list value_list: a list of values to be used for XSL params
+    :param list version_list: the ordered sequence of versions (oldest to latest) to be considered
+    :return: status using `os` exit codes
+    :rtype: int
     """
     source_version = get_source_version(args.infile)
     migration_path = get_migration_path(source_version, args.target_version, version_list=version_list)
     if args.verbose:
         _print("migration path: ")
         for _path in migration_path:
-            _print("\t* {} ---> {}".format(*_path))
-    input = args.infile
+            _print("* {} ---> {}".format(*_path))
+    infile = args.infile
     for source, target in migration_path:
         if args.verbose:
             _print("preparing to migrate v{source} to v{target}...".format(
@@ -81,8 +102,8 @@ def do_migration(args, value_list=None, version_list=VERSION_LIST):
         stylesheet = get_stylesheet(source, target)
         if args.verbose:
             _print("using stylesheet {}...".format(stylesheet))
-        outfile = get_output_name(input, target)
+        outfile = get_output_name(infile, target)
         if args.verbose:
             _print("migrating to {}".format(outfile))
-        input = module.migrate(input, outfile, stylesheet, args, **params)
+        infile = module.migrate(infile, outfile, stylesheet, args, **params)
     return os.EX_OK

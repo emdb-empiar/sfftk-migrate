@@ -1,5 +1,42 @@
-# the sequence of versions and how to proceed with a migration
 """
+sfftk-migrate
+==============
+
+This is a simple tool to allow users to easily migrate older versions of EMDB-SFF files to the latest (supported version).
+It has only one dependency: `lxml` which effects part of the migrations.
+
+Presently it only works with XML (.sff) EMDB-SFF files.
+
+How does it work?
+-----------------
+
+Each migration consists of two components:
+
+1. a Python module which implements a `migrate` function, and
+
+2. an XSL stylesheet which defines how the `source` is transformed into the `target`
+
+The `migrate` function in (1) has the following signature:
+
+.. code:: python
+
+    def migrate(infile, outfile, stylesheet, args, encoding='utf-8', **params):
+        ...
+
+where `infile` and `outfile` are the names of the source and target files, `stylesheet` is the
+XSL file, `args` is the argument namespace, `encoding` defines what encoding the outfile will
+be writing in, and `**params` is a dictionary of any params specified in the XSL file.
+
+Please reference https://www.w3schools.com/xml/xsl_intro.asp on how XSL works.
+
+Migrations are effected using the `migrate.do_migration` function which has the following signature:
+
+.. code:: python
+
+    def do_migration(args, value_list=None, version_list=VERSION_LIST):
+        ...
+
+
 Lessons learned in using `lxml`
 ---------------------------------
 etree.parse() takes XML files/file objects and returns an ElementTree
@@ -39,9 +76,13 @@ VERSION_LIST = [
     '0.8.0.dev0'
 ]
 TEST_DATA_PATH = os.path.join(os.path.dirname(__file__))
-XSL = os.path.join(TEST_DATA_PATH, 'xsl')
-XML = os.path.join(TEST_DATA_PATH, 'xml')
+
+XSL = os.path.join(TEST_DATA_PATH, 'data', 'xsl')
+XML = os.path.join(TEST_DATA_PATH, 'data', 'xml')
+
 MIGRATIONS_PACKAGE = 'sfftk_migrate.migrations'
+STYLESHEETS_DIR = os.path.join(os.path.dirname(__file__), 'stylesheets')
+
 ENDIANNESS = {
     "little": "<",
     "big": ">",

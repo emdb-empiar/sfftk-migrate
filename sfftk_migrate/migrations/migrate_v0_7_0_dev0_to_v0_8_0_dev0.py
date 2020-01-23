@@ -97,7 +97,7 @@ def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endiann
 def migrate(infile, outfile, stylesheet, args, encoding='utf-8', **kwargs):
     if args.verbose:
         _print("migrating by stylesheet...")
-    _migrated = migrate_by_stylesheet(infile, stylesheet, **kwargs)
+    _migrated = migrate_by_stylesheet(infile, stylesheet, verbose=args.verbose, **kwargs)
 
     if args.verbose:
         _print("ad hoc migration by function...")
