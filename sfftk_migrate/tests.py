@@ -7,8 +7,8 @@ import unittest
 from lxml import etree
 
 from . import XSL, XML, VERSION_LIST
-from .main import parse_args
 from .core import get_module, get_stylesheet, get_source_version, get_migration_path
+from .main import parse_args
 from .migrate import migrate_by_stylesheet, do_migration, get_params
 from .utils import _print, _check, _decode_data
 
@@ -116,7 +116,7 @@ class TestUtils(unittest.TestCase):
             outfile=os.path.join(XML, "my_output.xml")
         )
         args = parse_args(cmd)
-        _text = "48ec3e2ab568763658fc3f5430b851ceaf1593d6" #secrets.token_hex(20)
+        _text = "48ec3e2ab568763658fc3f5430b851ceaf1593d6"  # secrets.token_hex(20)
         status = do_migration(
             args,
             value_list=[_text],
@@ -450,4 +450,3 @@ class TestMain(unittest.TestCase):
         args = parse_args(cmd, use_shlex=False)
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.outfile, "nothing.xml")
-
