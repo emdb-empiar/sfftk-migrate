@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='sfftk-migrate',
-    version='0.1.0.dev0',
+    version='0.1.0',
     packages=['sfftk_migrate'],
     url='',
     license='Apache 2.0',
