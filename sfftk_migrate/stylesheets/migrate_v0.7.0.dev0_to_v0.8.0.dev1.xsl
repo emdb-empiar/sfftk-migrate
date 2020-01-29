@@ -37,7 +37,7 @@
 
     <xsl:template match="/segmentation/version">
         <version>
-            <xsl:text>0.8.0.dev0</xsl:text>
+            <xsl:text>0.8.0.dev1</xsl:text>
         </version>
     </xsl:template>
 

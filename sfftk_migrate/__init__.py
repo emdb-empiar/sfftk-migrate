@@ -77,7 +77,7 @@ import os
 
 VERSION_LIST = [
     '0.7.0.dev0',
-    '0.8.0.dev0'
+    '0.8.0.dev1'
 ]
 TEST_DATA_PATH = os.path.join(os.path.dirname(__file__))
 

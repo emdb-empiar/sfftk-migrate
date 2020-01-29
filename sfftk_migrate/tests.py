@@ -92,7 +92,7 @@ class TestUtils(unittest.TestCase):
         fn_v07 = os.path.join(XML, 'test2.sff')
         source_version_v07 = get_source_version(fn_v07)
         self.assertEqual(source_version_v07, '0.7.0.dev0')
-        fn_v08 = os.path.join(XML, 'test2_v0.8.0.dev0.sff')
+        fn_v08 = os.path.join(XML, 'test2_v0.8.0.dev1.sff')
         source_version_v08 = get_source_version(fn_v08)
         self.assertEqual(source_version_v08, '0.8.0.dev0')
 
@@ -131,7 +131,7 @@ class TestUtils(unittest.TestCase):
 
     def test_do_migration(self):
         """Do an actual migration using the convenience function"""
-        cmd = "{infile} --target-version 0.8.0.dev0 --outfile {outfile}".format(
+        cmd = "{infile} --target-version 0.8.0.dev1 --outfile {outfile}".format(
             infile=os.path.join(XML, 'test2.sff'),
             outfile=os.path.join(XML, 'my_file_out.sff')
         )
@@ -277,7 +277,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
     def test_v0_7_0_dev0_to_v0_8_0_dev0(self):
         """Test migration from v0.7.0.dev0 to v0.8.0.dev0"""
         original = os.path.join(XML, 'test2.sff')
-        stylesheet = get_stylesheet("0.7.0.dev0", "0.8.0.dev0")
+        stylesheet = get_stylesheet("0.7.0.dev0", "0.8.0.dev1")
         # phase I migration using stylesheet
         _migrated = migrate_by_stylesheet(original, stylesheet)
         # convert migration to an ElementTree object
@@ -288,7 +288,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         segments = _original.xpath('/segmentation/segmentList/segment')
         _print(segments)
         segment_meshes = dict()
-        module = get_module('0.7.0.dev0', '0.8.0.dev0')
+        module = get_module('0.7.0.dev0', '0.8.0.dev1')
         for segment in segments:
             segment_meshes[int(segment.get("id"))] = dict()
             for mesh in segment.xpath('meshList/mesh'):
@@ -309,7 +309,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
             'utf-8')
         # sys.stderr.write('migrated:\n' + migrated_decoded)
-        # with open(os.path.join(XML, 'test2_v0.8.0.dev0.sff'), 'w') as f:
+        # with open(os.path.join(XML, 'test2_v0.8.0.dev1.sff'), 'w') as f:
         #     f.write(migrated_decoded)
 
     def test_meshes_equal_v0_7_0_dev0_vs_v0_8_0_dev0(self):
@@ -420,13 +420,13 @@ class TestEMDBSFFMigrations(unittest.TestCase):
     def test_v0_7_0_dev0_to_v0_8_0_dev0_shapes(self):
         """Test that we can migrate shapes"""
         original = os.path.join(XML, 'test_shape_segmentation.sff')
-        stylesheet = get_stylesheet("0.7.0.dev0", "0.8.0.dev0")
+        stylesheet = get_stylesheet("0.7.0.dev0", "0.8.0.dev1")
         _migrated = migrate_by_stylesheet(original, stylesheet)
         migrated = etree.ElementTree(etree.XML(_migrated))
         migrated_decoded = etree.tostring(migrated, xml_declaration=True, encoding='UTF-8', pretty_print=True).decode(
             'utf-8')
         sys.stderr.write(migrated_decoded)
-        with open(os.path.join(XML, 'test_shape_segmentation_v0.8.0.dev0.sff'), 'w') as f:
+        with open(os.path.join(XML, 'test_shape_segmentation_v0.8.0.dev1.sff'), 'w') as f:
             f.write(migrated_decoded)
 
 
