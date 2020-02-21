@@ -19,7 +19,8 @@ The main entry point for this utility is the ``sff-migrate`` command. Please con
 .. code-block:: bash
 
     ~$ sff-migrate -h
-    usage: sff-migrate [-h] [-t TARGET_VERSION] [-o OUTFILE] [-v] infile
+    usage: sff-migrate [-h] [-t TARGET_VERSION] [-o OUTFILE] [-v] [-l] [-s]
+                       [infile]
 
     Upgrade EMDB-SFF files to more recent schema
 
@@ -29,10 +30,12 @@ The main entry point for this utility is the ``sff-migrate`` command. Please con
     optional arguments:
       -h, --help            show this help message and exit
       -t TARGET_VERSION, --target-version TARGET_VERSION
-                            the target version to migrate to [default: 0.8.0.dev0]
+                            the target version to migrate to [default: 0.8.0.dev1]
       -o OUTFILE, --outfile OUTFILE
                             outfile file [default: <infile>_<target>.xml]
       -v, --verbose         verbose output [default: False]
+      -l, --list-versions   list supported versions [default: False]
+      -s, --show-version    show the version of the input file [default: False]
 
 
 Migrating is simple:
@@ -40,6 +43,24 @@ Migrating is simple:
 .. code-block:: bash
 
     ~$ sff-migrate file.sff
+
+List supported versions:
+
+.. code-block:: bash
+
+    ~$ sfftk-migrate [4010 2020-02-21 16:17:32] $ sff-migrate -l
+    versions migratable to 0.8.0.dev1:
+    * 0.7.0.dev0
+
+Show the file's version:
+
+.. code-block:: bash
+
+    ~$ sff-migrate -s sfftk_migrate/data/xml/emd_1547.sff
+    file sfftk_migrate/data/xml/emd_1547.sff is of version 0.7.0.dev0
+
+    ~$ sff-migrate -s sfftk_migrate/data/xml/emd_1547_v0.8.0.dev1.sff
+    file sfftk_migrate/data/xml/emd_1547_v0.8.0.dev1.sff is of version v0.8.0.dev0
 
 -------------
 License
