@@ -48,7 +48,7 @@ List supported versions:
 
 .. code-block:: bash
 
-    ~$ sfftk-migrate [4010 2020-02-21 16:17:32] $ sff-migrate -l
+    ~$ sff-migrate -l
     versions migratable to 0.8.0.dev1:
     * 0.7.0.dev0
 
