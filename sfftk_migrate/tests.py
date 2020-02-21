@@ -8,7 +8,7 @@ from lxml import etree
 
 from . import XSL, XML, VERSION_LIST
 from .core import get_module, get_stylesheet, get_source_version, get_migration_path
-from .main import parse_args
+from .main import parse_args, list_versions
 from .migrate import migrate_by_stylesheet, do_migration, get_params
 from .utils import _print, _check, _decode_data
 
@@ -66,10 +66,30 @@ class TestUtils(unittest.TestCase):
 
     def test_parse_args(self):
         """Test correct arguments"""
+        # default with -t/--target-version
         args = parse_args("file.xml -t 1.0")
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.target_version, "1.0")
         self.assertEqual(args.outfile, "file_v1.0.xml")
+        self.assertFalse(args.list_versions)
+        # specify outfile
+        args = parse_args("file.xml -t 1.0 -o my_output.xml")
+        self.assertEqual(args.outfile, "my_output.xml")
+        # list valid versions
+        args = parse_args("-l")
+        self.assertEqual(args.infile, '')
+        self.assertEqual(args.target_version, VERSION_LIST[-1])
+        self.assertIsNone(args.outfile)
+        self.assertTrue(args.list_versions)
+        self.assertFalse(args.show_version)
+        # show version in file
+        args = parse_args("-s file.xml")
+        self.assertEqual(args.infile, 'file.xml')
+        self.assertEqual(args.target_version, VERSION_LIST[-1])
+        self.assertEqual(args.outfile, 'file_v0.8.0.dev1.xml')
+        self.assertFalse(args.list_versions)
+        self.assertTrue(args.show_version)
+
 
     def test_get_stylesheet(self):
         """Given versions return the correct stylesheet to use"""
@@ -156,6 +176,14 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(params), 1)
         with self.assertRaises(ValueError):
             get_params(module.PARAM_LIST, value_list=[_text, _text])
+
+    def test_list_versions(self):
+        """Test that we can list the supported versions"""
+        args = parse_args("-l")
+        status, version_count = list_versions()
+        self.assertEqual(status, os.EX_OK)
+        self.assertEqual(version_count, 2)
+
 
 
 class TestMigrations(unittest.TestCase):

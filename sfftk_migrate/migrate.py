@@ -89,6 +89,7 @@ def do_migration(args, value_list=None, version_list=VERSION_LIST):
         for _path in migration_path:
             _print("* {} ---> {}".format(*_path))
     infile = args.infile
+    outfile = None
     for source, target in migration_path:
         if args.verbose:
             _print("preparing to migrate v{source} to v{target}...".format(

@@ -15,6 +15,7 @@ setup(
     long_description_content_type='text/x-rst',
     long_description=LONG_DESCRIPTION,
     install_requires=['lxml'],
+    python_requires='>=3',
     entry_points={
         'console_scripts': [
             'sff-migrate = sfftk_migrate.main:main',
