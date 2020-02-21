@@ -6,7 +6,7 @@
 About
 -------------
 
-``sfftk-migrate`` is a utiity for *migrating EMDB-SFF files* from older to the latest version of the data model
+``sfftk-migrate`` is a utility for *migrating EMDB-SFF files* from older to the latest version of the data model
 (see `https://emdb-empiar.github.io/EMDB-SFF/ <https://emdb-empiar.github.io/EMDB-SFF/>`_ for the latest version).
 It currently only supports migrations of XML (``.sff``) files from EMDB-SFF ``v0.7.0.dev0``.
 
