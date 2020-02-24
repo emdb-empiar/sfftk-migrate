@@ -1,7 +1,6 @@
 language: python
 
 python:
-  - "2.7"
   - "3.5"
   - "3.6"
   - "3.7"
@@ -25,7 +24,7 @@ install:
   - python setup.py develop
 
 script:
-  - pytest --cov=./sfftk_migrate sfftk_migrate/tests
+  - pytest --cov=./sfftk_migrate sfftk_migrate/tests.py
 
 after_success:
   - coveralls
