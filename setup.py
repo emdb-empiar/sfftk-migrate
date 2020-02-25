@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name='sfftk-migrate',
-    version='0.1.0',
+    version='0.1.0b1',
     packages=['sfftk_migrate'],
     url='',
     license='Apache 2.0',
@@ -16,6 +16,29 @@ setup(
     long_description=LONG_DESCRIPTION,
     install_requires=['lxml'],
     python_requires='>=3',
+    classifiers=[
+        # maturity
+        u"Development Status :: 4 - Beta"
+        # environment
+        u"Environment :: Console",
+        u"Intended Audience :: Developers",
+        u"Intended Audience :: Science/Research",
+        # license
+        u"License :: OSI Approved :: Apache Software License",
+        # os
+        u"Operating System :: OS Independent",
+        # python versions
+        u"Programming Language :: Python :: 3",
+        u"Programming Language :: Python :: 3.5",
+        u"Programming Language :: Python :: 3.6",
+        u"Programming Language :: Python :: 3.7",
+        u"Programming Language :: Python :: 3.8",
+        u"Topic :: Software Development :: Libraries :: Python Modules",
+        u"Topic :: Terminals",
+        u"Topic :: Text Processing",
+        u"Topic :: Text Processing :: Markup",
+        u"Topic :: Utilities",
+    ],
     entry_points={
         'console_scripts': [
             'sff-migrate = sfftk_migrate.main:main',

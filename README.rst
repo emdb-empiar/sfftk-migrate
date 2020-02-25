@@ -2,6 +2,22 @@
 ``sfftk-migrate``: Utility to Update Old EMDB-SFF Files
 ========================================================
 
+.. image:: https://badge.fury.io/py/sfftk-migrate.svg
+   :target: https://badge.fury.io/py/sfftk-migrate
+
+.. image:: https://img.shields.io/pypi/pyversions/sfftk-migrate
+   :alt: PyPI - Python Version
+
+.. image:: https://travis-ci.org/emdb-empiar/sfftk-migrate.svg?branch=master
+    :target: https://travis-ci.org/emdb-empiar/sfftk-migrate
+
+.. image:: https://readthedocs.org/projects/sfftk-migrate/badge/?version=latest
+   :target: https://sfftk-migrate.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+.. image:: https://coveralls.io/repos/github/emdb-empiar/sfftk-migrate/badge.svg?branch=master
+   :target: https://coveralls.io/github/emdb-empiar/sfftk-migrate?branch=master
+
 -------------
 About
 -------------
