@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 import os
-import secrets
 import sys
 import types
 import unittest
@@ -90,7 +90,6 @@ class TestUtils(unittest.TestCase):
         self.assertFalse(args.list_versions)
         self.assertTrue(args.show_version)
 
-
     def test_get_stylesheet(self):
         """Given versions return the correct stylesheet to use"""
         stylesheet = get_stylesheet("1", "2")
@@ -170,7 +169,7 @@ class TestUtils(unittest.TestCase):
     def test_get_params(self):
         """Test getting params"""
         module = get_module('1', '2')
-        _text = secrets.token_hex(20)
+        _text = "ce3c90151bb3c803c8e6570ee7d5845ac3c96c38"  # secrets.token_hex(20)
         params = get_params(module.PARAM_LIST, value_list=[_text])
         self.assertIsInstance(params, dict)
         self.assertEqual(len(params), 1)
@@ -183,7 +182,6 @@ class TestUtils(unittest.TestCase):
         status, version_count = list_versions()
         self.assertEqual(status, os.EX_OK)
         self.assertEqual(version_count, 2)
-
 
 
 class TestMigrations(unittest.TestCase):
