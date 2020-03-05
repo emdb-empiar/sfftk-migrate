@@ -1,12 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.rst') as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
     name='sfftk-migrate',
-    version='0.1.0b1',
-    packages=['sfftk_migrate'],
+    version='0.1.0b2',
+    packages=find_packages(),
     url='',
     license='Apache 2.0',
     author='Paul K. Korir, PhD',
