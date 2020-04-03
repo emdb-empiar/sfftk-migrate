@@ -156,10 +156,25 @@ class TestUtils(unittest.TestCase):
         )
         args = parse_args(cmd)
         _print(args)
-        do_migration(
+        status = do_migration(
             args
         )
+        self.assertEqual(status, os.EX_OK)
+        source_version = get_source_version(os.path.join(XML, 'my_file_out.sff'))
+        self.assertEqual(source_version, '0.8.0.dev1')
         os.remove(os.path.join(XML, 'my_file_out.sff'))
+
+    def test_do_migration_null(self):
+        """Try to migrate a migrated file"""
+        cmd = "{infile} --target-version 0.7.0.dev0 --outfile {outfile}".format(
+            infile=os.path.join(XML, 'test2.sff'),
+            outfile=os.path.join(XML, 'my_file_out.sff')
+        )
+        args = parse_args(cmd)
+        _print(args)
+        status = do_migration(args)
+        self.assertEqual(status, os.EX_OK)
+        self.assertFalse(os.path.exists(os.path.join(XML, 'my_file_out.sff')))
 
     def test_get_module(self):
         """Check that we can get the right module for this migration"""
