@@ -63,8 +63,12 @@ def migrate_by_stylesheet(original, stylesheet, verbose=False, **kwargs):
     # _print('difference:', dropped_fields)
     if dropped_fields and len(original_elements) > len(migrated_elements) and verbose:
         warnings.warn(
-            UserWarning('the migration has resulted in the following fields being dropped: {}'.format(
-                ', '.join(dropped_fields))),
+            UserWarning('the migration has resulted in the following fields being dropped: {dropped_fields} '
+                        '+ {num_others} others'.format(
+                dropped_fields=', '.join(list(dropped_fields)[:10]),
+                num_others=len(dropped_fields) - 10,
+            )),
+
         )
     return etree.tostring(migrated, pretty_print=True, xml_declaration=True)
 

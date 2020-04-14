@@ -3,22 +3,10 @@ import os
 import shlex
 import sys
 
-from . import VERSION_LIST
-from .core import get_output_name, get_source_version
+from . import VERSION_LIST, SFFTK_MIGRATIONS_VERSION
+from .core import get_output_name, get_source_version, list_versions
 from .migrate import do_migration
 from .utils import _print
-
-
-def list_versions():
-    """
-    List the EMDB-SFF versions that are migratable to the current version
-    :return: status
-    :return: version_count
-    """
-    version_count = len(VERSION_LIST)
-    for version in VERSION_LIST[:-1]:
-        _print('* {version}'.format(version=version))
-    return os.EX_OK, version_count
 
 
 def parse_args(args, use_shlex=True):
@@ -44,6 +32,7 @@ def parse_args(args, use_shlex=True):
                         help='the target version to migrate to [default: {}]'.format(VERSION_LIST[-1]))
     parser.add_argument('-o', '--outfile', required=False, help='outfile file [default: <infile>_<target>.xml]')
     parser.add_argument('-v', '--verbose', default=False, action='store_true', help='verbose output [default: False]')
+    parser.add_argument('-V', '--version', default=False, action='store_true', help='print the version')
     parser.add_argument(
         '-l', '--list-versions',
         default=False,
@@ -59,13 +48,24 @@ def parse_args(args, use_shlex=True):
 
     args = parser.parse_args(_args)
 
-    if args.outfile is None and args.infile != '':
-        args.outfile = get_output_name(args.infile, args.target_version, prefix="")
-    return args
+    # no migrations expected
+    if args.list_versions or args.show_version or args.version:
+        return args
+    else:
+        # we expect to do a migration
+        if args.infile == '':
+            parser.print_help()
+            return os.EX_USAGE
+        else:
+            if args.outfile is None:
+                args.outfile = get_output_name(args.infile, args.target_version, prefix="")
+            return args
 
 
 def main():
     args = parse_args(sys.argv[1:], use_shlex=False)  # no shlex for list of args
+    if args == os.EX_USAGE:
+        return args
     if args.list_versions:
         _print("versions migratable to {current_version}:".format(
             current_version=VERSION_LIST[-1],
@@ -75,6 +75,12 @@ def main():
         _print("file {infile} is of version {version}".format(
             infile=args.infile,
             version=get_source_version(args.infile)
+        ))
+        status = os.EX_OK
+    elif args.version:
+        _print("sfftk-migrate v{version} for {schema_versions}".format(
+            version=SFFTK_MIGRATIONS_VERSION,
+            schema_versions=", ".join(VERSION_LIST[:-1]),
         ))
         status = os.EX_OK
     else:

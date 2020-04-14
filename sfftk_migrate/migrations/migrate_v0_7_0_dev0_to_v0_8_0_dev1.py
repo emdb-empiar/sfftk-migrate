@@ -3,13 +3,13 @@ import struct
 
 from lxml import etree
 
+from .. import ENDIANNESS, MODE
 from ..migrate import migrate_by_stylesheet
 from ..utils import _print
-from .. import ENDIANNESS, MODE
 
 
 def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endianness="little"):
-    """Given a mesh from the v0.7.0.dev0 we convert it to a mesh in v0.8.0.dev0"""
+    """Given a mesh from the v0.7.0.dev0 we convert it to a mesh in v0.8.0.dev1"""
     # assertions
     try:
         assert endianness in ["little", "big"]
@@ -27,7 +27,15 @@ def migrate_mesh(mesh, vertices_mode="float32", triangles_mode="uint32", endiann
     surface_vertex_dict = dict()  # dictionary to remap vertex ids
     surface_vertices = list()
     normal_vertices = list()
-    vertex_list = next(mesh.iter("vertexList"))
+    try:
+        vertex_list = next(mesh.iter("vertexList"))
+    except StopIteration:
+        # no geometry
+        return (
+            etree.Element("vertices", num_vertices="0", mode=vertices_mode, endianness=endianness, data=""),
+            etree.Element("normals", num_normals="0", mode=vertices_mode, endianness=endianness, data=""),
+            etree.Element("triangles", num_triangles="0", mode=triangles_mode, endianness=endianness, data="")
+        )
     i = 0
     for vertex in vertex_list.iter("v"):
         designation = vertex.get("designation")

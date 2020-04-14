@@ -24,7 +24,7 @@ install:
   - python setup.py develop
 
 script:
-  - pytest --cov=./sfftk_migrate sfftk_migrate/tests.py
+  - pytest --cov=./sfftk_migrate sfftk_migrate/test_sfftk_migrate.py
 
 after_success:
   - coveralls

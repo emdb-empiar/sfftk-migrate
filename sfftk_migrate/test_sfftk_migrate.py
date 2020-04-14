@@ -3,12 +3,13 @@ import os
 import sys
 import types
 import unittest
+import inspect
 
 from lxml import etree
 
 from . import XSL, XML, VERSION_LIST
-from .core import get_module, get_stylesheet, get_source_version, get_migration_path
-from .main import parse_args, list_versions
+from .core import get_module, get_stylesheet, get_source_version, get_migration_path, list_versions
+from .main import parse_args
 from .migrate import migrate_by_stylesheet, do_migration, get_params
 from .utils import _print, _check, _decode_data
 
@@ -54,6 +55,8 @@ class TestUtils(unittest.TestCase):
         """Test that _check works"""
         with self.assertRaisesRegex(TypeError, r"object '1' is not of class <class 'str'>"):
             _check(1, str, TypeError)
+        with self.assertRaises(TypeError):
+            _check(1, str, TypeError, message="")
 
     def test_migrate(self):
         """Test that migrate works"""
@@ -67,13 +70,13 @@ class TestUtils(unittest.TestCase):
     def test_parse_args(self):
         """Test correct arguments"""
         # default with -t/--target-version
-        args = parse_args("file.xml -t 1.0")
+        args = parse_args("file.xml -v -t 1.0")
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.target_version, "1.0")
         self.assertEqual(args.outfile, "file_v1.0.xml")
         self.assertFalse(args.list_versions)
         # specify outfile
-        args = parse_args("file.xml -t 1.0 -o my_output.xml")
+        args = parse_args("file.xml -v -t 1.0 -o my_output.xml")
         self.assertEqual(args.outfile, "my_output.xml")
         # list valid versions
         args = parse_args("-l")
@@ -83,12 +86,20 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(args.list_versions)
         self.assertFalse(args.show_version)
         # show version in file
-        args = parse_args("-s file.xml")
+        args = parse_args("-v -s file.xml")
         self.assertEqual(args.infile, 'file.xml')
         self.assertEqual(args.target_version, VERSION_LIST[-1])
-        self.assertEqual(args.outfile, 'file_v0.8.0.dev1.xml')
+        # self.assertEqual(args.outfile, 'file_v0.8.0.dev1.xml')
+        self.assertIsNone(args.outfile)
         self.assertFalse(args.list_versions)
         self.assertTrue(args.show_version)
+        # show package version
+        args = parse_args("-v -V")
+        self.assertEqual(args.infile, '')
+        self.assertIsNone(args.outfile)
+        self.assertTrue(args.version)
+        self.assertFalse(args.list_versions)
+        self.assertFalse(args.show_version)
 
     def test_get_stylesheet(self):
         """Given versions return the correct stylesheet to use"""
@@ -113,7 +124,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(source_version_v07, '0.7.0.dev0')
         fn_v08 = os.path.join(XML, 'test2_v0.8.0.dev1.sff')
         source_version_v08 = get_source_version(fn_v08)
-        self.assertEqual(source_version_v08, '0.8.0.dev0')
+        self.assertEqual(source_version_v08, '0.8.0.dev1')
 
     def test_get_migration_path(self):
         """Determine the sequence of migrations to perform"""
@@ -130,7 +141,7 @@ class TestUtils(unittest.TestCase):
     def test_do_migration_example(self):
         """Toy migration example"""
         version_list = ['1', '2']
-        cmd = "{infile} --target-version 2 --outfile {outfile}".format(
+        cmd = "{infile} -v --target-version 2 --outfile {outfile}".format(
             infile=os.path.join(XML, "original.xml"),
             outfile=os.path.join(XML, "my_output.xml")
         )
@@ -150,31 +161,33 @@ class TestUtils(unittest.TestCase):
 
     def test_do_migration(self):
         """Do an actual migration using the convenience function"""
-        cmd = "{infile} --target-version 0.8.0.dev1 --outfile {outfile}".format(
-            infile=os.path.join(XML, 'test2.sff'),
-            outfile=os.path.join(XML, 'my_file_out.sff')
+        # try a null migration
+        target_version = "0.8.0.dev1"
+        outfile = os.path.join(XML, 'my_file_out.sff')
+        cmd = "{infile} -v --target-version {target_version} --outfile {outfile}".format(
+            infile=os.path.join(XML, 'test2_v0.8.0.dev1.sff'),
+            target_version=target_version,
+            outfile=outfile,
         )
         args = parse_args(cmd)
-        _print(args)
-        status = do_migration(
-            args
-        )
-        self.assertEqual(status, os.EX_OK)
-        source_version = get_source_version(os.path.join(XML, 'my_file_out.sff'))
-        self.assertEqual(source_version, '0.8.0.dev1')
-        os.remove(os.path.join(XML, 'my_file_out.sff'))
-
-    def test_do_migration_null(self):
-        """Try to migrate a migrated file"""
-        cmd = "{infile} --target-version 0.7.0.dev0 --outfile {outfile}".format(
-            infile=os.path.join(XML, 'test2.sff'),
-            outfile=os.path.join(XML, 'my_file_out.sff')
-        )
-        args = parse_args(cmd)
-        _print(args)
         status = do_migration(args)
         self.assertEqual(status, os.EX_OK)
-        self.assertFalse(os.path.exists(os.path.join(XML, 'my_file_out.sff')))
+        self.assertFalse(os.path.exists(outfile)) # the file was not created
+        # try an actual migrations
+        cmd = "{infile} -v --target-version {target_version} --outfile {outfile}".format(
+            infile=os.path.join(XML, 'test2.sff'),
+            target_version=target_version,
+            outfile=outfile
+        )
+        args = parse_args(cmd)
+        status = do_migration(args)
+        self.assertEqual(status, os.EX_OK)
+        self.assertTrue(os.path.exists(outfile))  # the file was not created
+        in_version = get_source_version(args.infile)
+        out_version = get_source_version(outfile)
+        self.assertNotEqual(in_version, out_version)
+        self.assertEqual(out_version, target_version)
+        os.remove(outfile)
 
     def test_get_module(self):
         """Check that we can get the right module for this migration"""
@@ -193,7 +206,7 @@ class TestUtils(unittest.TestCase):
 
     def test_list_versions(self):
         """Test that we can list the supported versions"""
-        args = parse_args("-l")
+        args = parse_args("-v -l")
         status, version_count = list_versions()
         self.assertEqual(status, os.EX_OK)
         self.assertEqual(version_count, 2)
@@ -315,8 +328,38 @@ class TestMigrations(unittest.TestCase):
 
 
 class TestEMDBSFFMigrations(unittest.TestCase):
+    def test_migrate_mesh_exceptions(self):
+        """Test that we capture exceptions"""
+        module = get_module('0.7.0.dev0', '0.8.0.dev1')
+        # create an empty mesh
+        mesh = etree.Element("mesh")
+        with self.assertRaisesRegex(ValueError, r".*invalid endianness.*"):
+            module.migrate_mesh(mesh, endianness='other')
+        with self.assertRaisesRegex(ValueError, r".*invalid triangles mode.*"):
+            module.migrate_mesh(mesh, triangles_mode='other')
+        with self.assertRaisesRegex(ValueError, r".*invalid vertices mode.*"):
+            module.migrate_mesh(mesh, vertices_mode='other')
+        # no geometry
+        verts, norms, tris = module.migrate_mesh(mesh)
+        self.assertIsInstance(verts, etree._Element)
+        self.assertEqual(int(verts.get("num_vertices")), 0)
+        # let's get the signature of the migrate_mesh function to get the default values for kwargs
+        signature = inspect.signature(module.migrate_mesh)
+        # verts
+        self.assertEqual(verts.get("mode"), signature.parameters['vertices_mode'].default)
+        self.assertEqual(verts.get("endianness"), signature.parameters['endianness'].default)
+        self.assertEqual(verts.get("data"), "")
+        # norms
+        self.assertEqual(norms.get("mode"), signature.parameters['vertices_mode'].default)
+        self.assertEqual(norms.get("endianness"), signature.parameters['endianness'].default)
+        self.assertEqual(norms.get("data"), "")
+        # tris
+        self.assertEqual(tris.get("mode"), signature.parameters['triangles_mode'].default)
+        self.assertEqual(tris.get("endianness"), signature.parameters['endianness'].default)
+        self.assertEqual(tris.get("data"), "")
+
     def test_v0_7_0_dev0_to_v0_8_0_dev0(self):
-        """Test migration from v0.7.0.dev0 to v0.8.0.dev0"""
+        """Test migration from v0.7.0.dev0 to v0.8.0.dev1"""
         original = os.path.join(XML, 'test2.sff')
         stylesheet = get_stylesheet("0.7.0.dev0", "0.8.0.dev1")
         # phase I migration using stylesheet
@@ -360,7 +403,7 @@ class TestEMDBSFFMigrations(unittest.TestCase):
         to triangles.
         """
         v7 = os.path.join(XML, 'test7.sff')
-        v8 = os.path.join(XML, 'test7_v0.8.0.dev0.sff')
+        v8 = os.path.join(XML, 'test7_v0.8.0.dev1.sff')
         fv7 = etree.parse(v7)
         fv8 = etree.parse(v8)
         fv7_segments = fv7.xpath('/segmentation/segmentList/segment')
@@ -474,20 +517,20 @@ class TestEMDBSFFMigrations(unittest.TestCase):
 class TestMain(unittest.TestCase):
     def test_parse_args(self):
         """Test parse_args function"""
-        cmd = "file.xml"
+        cmd = "file.xml -v"
         args = parse_args(cmd)
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.outfile, "file_v{}.xml".format(VERSION_LIST[-1]))
 
     def test_parse_args_outfile(self):
         """Test that outfile arg is honoured"""
-        cmd = "file.xml -o nothing.xml"
+        cmd = "file.xml -v -o nothing.xml"
         args = parse_args(cmd)
         self.assertEqual(args.outfile, "nothing.xml")
 
     def test_no_shlex(self):
         """Test not using shlex"""
-        cmd = ["file.xml", "-o", "nothing.xml"]
+        cmd = ["file.xml", "-v", "-o", "nothing.xml"]
         args = parse_args(cmd, use_shlex=False)
         self.assertEqual(args.infile, "file.xml")
         self.assertEqual(args.outfile, "nothing.xml")

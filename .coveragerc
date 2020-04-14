@@ -1,0 +1,6 @@
+[run]
+omit =
+    sfftk_migrate/main.py
+
+[report]
+sort = Cover

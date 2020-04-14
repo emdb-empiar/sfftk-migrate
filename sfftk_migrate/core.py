@@ -11,6 +11,7 @@ import os
 from lxml import etree
 
 from . import VERSION_LIST, XSL, MIGRATIONS_PACKAGE, STYLESHEETS_DIR
+from .utils import _print
 
 
 def get_stylesheet(source, target, prefix="migrate"):
@@ -107,3 +108,15 @@ def get_source_version(fn, path="/segmentation/version"):
     source_tree = etree.parse(fn)
     source_version = source_tree.xpath("{path}/text()".format(path=path))[0]
     return source_version
+
+
+def list_versions():
+    """
+    List the EMDB-SFF versions that are migratable to the current version
+    :return: status
+    :return: version_count
+    """
+    version_count = len(VERSION_LIST)
+    for version in VERSION_LIST[:-1]:
+        _print('* {version}'.format(version=version))
+    return os.EX_OK, version_count

@@ -25,7 +25,7 @@ def _check(obj, klass, exception=Exception, message="object '{}' is not of class
     try:
         assert isinstance(obj, klass)
     except AssertionError:
-        if message.find("{}"):
+        if message.find("{}") >= 0:
             raise exception(message.format(obj, klass))
         else:
             raise exception(message)

@@ -1,11 +1,13 @@
 from setuptools import setup, find_packages
 
+from sfftk_migrate import SFFTK_MIGRATIONS_VERSION
+
 with open('README.rst') as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
     name='sfftk-migrate',
-    version='0.1.0b4',
+    version=SFFTK_MIGRATIONS_VERSION,
     packages=find_packages(),
     url='',
     license='Apache 2.0',

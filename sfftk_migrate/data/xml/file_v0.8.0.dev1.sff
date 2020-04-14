@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <segmentation>
-    <version>v0.8.0.dev0</version>
+    <version>v0.8.0.dev1</version>
     <name>a new name</name>
     <software_list>
 		<software id="0">
