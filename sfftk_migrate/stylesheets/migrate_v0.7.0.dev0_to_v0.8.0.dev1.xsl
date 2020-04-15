@@ -197,7 +197,6 @@
                         </xsl:if>
                         <xsl:if test="count(./biologicalAnnotation/externalReferences/ref) > 0">
                             <external_references>
-                                <xsl:text>nothing</xsl:text>
                                 <xsl:for-each select="./biologicalAnnotation/externalReferences/ref">
                                     <xsl:copy-of select="$newline"/>
                                     <xsl:copy-of select="$tab-5"/>

@@ -75,7 +75,7 @@ The parameters are passed as keyword parameters to the transform call. First, le
 
 import os
 
-SFFTK_MIGRATIONS_VERSION = '0.1.0b5'
+SFFTK_MIGRATIONS_VERSION = '0.1.0b6'
 VERSION_LIST = [
     '0.7.0.dev0',
     '0.8.0.dev1'
