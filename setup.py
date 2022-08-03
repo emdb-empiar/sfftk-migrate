@@ -36,6 +36,7 @@ setup(
         u"Programming Language :: Python :: 3.7",
         u"Programming Language :: Python :: 3.8",
         u"Programming Language :: Python :: 3.9",
+        u"Programming Language :: Python :: 3.10",
         u"Topic :: Software Development :: Libraries :: Python Modules",
         u"Topic :: Terminals",
         u"Topic :: Text Processing",

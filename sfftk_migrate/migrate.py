@@ -86,7 +86,11 @@ def do_migration(args, value_list=None, version_list=VERSION_LIST):
     :return: status using `os` exit codes
     :rtype: int
     """
-    source_version = get_source_version(args.infile)
+    try:
+        source_version = get_source_version(args.infile)
+    except OSError:
+        _print("Unable to read {}; please ensure it exists".format(args.infile))
+        return os.EX_IOERR
     migration_path = get_migration_path(source_version, args.target_version, version_list=version_list)
     if not migration_path:
         _print("Empty migration path for version {}".format(source_version))

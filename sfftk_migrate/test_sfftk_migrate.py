@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import inspect
 import os
 import sys
 import types
 import unittest
-import inspect
 
 from lxml import etree
 
@@ -172,7 +172,7 @@ class TestUtils(unittest.TestCase):
         args = parse_args(cmd)
         status = do_migration(args)
         self.assertEqual(status, os.EX_OK)
-        self.assertFalse(os.path.exists(outfile)) # the file was not created
+        self.assertFalse(os.path.exists(outfile))  # the file was not created
         # try an actual migrations
         cmd = "{infile} -v --target-version {target_version} --outfile {outfile}".format(
             infile=os.path.join(XML, 'test2.sff'),
@@ -188,6 +188,19 @@ class TestUtils(unittest.TestCase):
         self.assertNotEqual(in_version, out_version)
         self.assertEqual(out_version, target_version)
         os.remove(outfile)
+
+    def test_do_migration_fail_missing_file(self):
+        """Print an error message if the file does not exist"""
+        target_version = "0.8.0.dev1"
+        outfile = 'my_file_out.sff'  # incorrect path
+        cmd = "{infile} -v --target-version {target_version} --outfile {outfile}".format(
+            infile='test2_v0.8.0.dev1.sff',  # non-existent file
+            target_version=target_version,
+            outfile=outfile,
+        )
+        args = parse_args(cmd)
+        status = do_migration(args)
+        self.assertEqual(status, os.EX_IOERR)
 
     def test_get_module(self):
         """Check that we can get the right module for this migration"""
